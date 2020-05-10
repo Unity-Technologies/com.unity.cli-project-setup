@@ -1,0 +1,1 @@
+# com.unity.cli-project-setup

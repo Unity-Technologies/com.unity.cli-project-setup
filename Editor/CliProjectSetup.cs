@@ -1,12 +1,11 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Text.RegularExpressions;
 using NDesk.Options;
 using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Rendering;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 namespace com.unity.cliprojectsetup
 {
@@ -17,12 +16,10 @@ namespace com.unity.cliprojectsetup
 
         public void ConfigureFromCmdlineArgs()
         {
-#if UNITY_EDITOR
             ParseCommandLineArgs();
             ConfigureSettings();
-#endif
         }
-#if UNITY_EDITOR
+
         private void ParseCommandLineArgs()
         {
             var args = Environment.GetCommandLineArgs();
@@ -132,6 +129,6 @@ namespace com.unity.cliprojectsetup
                 platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
             }
         }
-#endif
     }
 }
+#endif

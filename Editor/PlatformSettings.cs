@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -6,30 +7,24 @@ using System.Text.RegularExpressions;
 using com.unity.test.performance.runtimesettings;
 using UnityEngine;
 using UnityEngine.Rendering;
-#if UNITY_EDITOR
-using System.Text;
 using UnityEditor;
 using UnityEditor.PackageManager;
 #if URP
 using UnityEngine.Rendering.Universal;
-#endif
 #endif
 
 namespace com.unity.cliprojectsetup
 {
     public class PlatformSettings
     {
-// TODO, make sure this wrap is correct
-#if UNITY_EDITOR
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
         public GraphicsDeviceType PlayerGraphicsApi;
         public string PackageUnderTestName;
         public string PackageUnderTestRevision;
         public string PackageUnderTestRevisionDate;
         public string PackageUnderTestBranch;
-#endif
-        private readonly string resourceDir = "Assets/Resources";
 
+        private static readonly string resourceDir = "Assets/Resources";
         private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
@@ -54,6 +49,7 @@ namespace com.unity.cliprojectsetup
             settingsAsset.MtRendering = MtRendering;
             settingsAsset.GraphicsJobs = GraphicsJobs;
             settingsAsset.EnableBurst = EnableBurst;
+            settingsAsset.ScriptingBackend = ScriptingImplementation.ToString();
             settingsAsset.ColorSpace = ColorSpace.ToString();
             settingsAsset.Username = Username = Environment.UserName;
             settingsAsset.PackageUnderTestName = PackageUnderTestName;
@@ -138,7 +134,7 @@ namespace com.unity.cliprojectsetup
             return revision;
         }
 
-        private void CreateAndSaveCurrentSettingsAsset(CurrentSettings settingsAsset)
+        public static void CreateAndSaveCurrentSettingsAsset(CurrentSettings settingsAsset)
         {
             if (!Directory.Exists(resourceDir))
             {
@@ -150,3 +146,4 @@ namespace com.unity.cliprojectsetup
         }
     }
 }
+#endif

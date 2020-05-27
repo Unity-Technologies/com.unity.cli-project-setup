@@ -66,7 +66,7 @@ namespace com.unity.cliprojectsetup
 #else
             settingsAsset.AntiAliasing = QualitySettings.antiAliasing;
 #endif
-            CreateAndSaveCurrentSettingsAsset(settingsAsset);
+            SaveCurrentSettingsAsset(settingsAsset);
         }
 
         private void GetPackageUnderTestVersionInfo(CurrentSettings settingsAsset)
@@ -134,14 +134,18 @@ namespace com.unity.cliprojectsetup
             return revision;
         }
 
-        public static void CreateAndSaveCurrentSettingsAsset(CurrentSettings settingsAsset)
+        public static void SaveCurrentSettingsAsset(CurrentSettings settingsAsset)
         {
             if (!Directory.Exists(resourceDir))
             {
                 Directory.CreateDirectory(resourceDir);
             }
 
-            AssetDatabase.CreateAsset(settingsAsset, resourceDir + "/settings.asset");
+            if (!Resources.FindObjectsOfTypeAll<CurrentSettings>().Any())
+            {
+                AssetDatabase.CreateAsset(settingsAsset, resourceDir + "/settings.asset");
+            };
+            
             AssetDatabase.SaveAssets();
         }
     }

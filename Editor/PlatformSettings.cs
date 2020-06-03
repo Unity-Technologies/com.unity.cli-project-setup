@@ -145,7 +145,8 @@ namespace com.unity.cliprojectsetup
             {
                 AssetDatabase.CreateAsset(settingsAsset, resourceDir + "/settings.asset");
             };
-            
+
+            EditorUtility.SetDirty(settingsAsset);
             AssetDatabase.SaveAssets();
         }
     }

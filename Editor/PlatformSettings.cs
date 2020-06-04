@@ -40,6 +40,7 @@ namespace com.unity.cliprojectsetup
         public string TestsRevision;
         public string TestsRevisionDate;
         public string Username;
+        private static readonly string settingsAssetName = "/settings.asset";
 
         public void SerializeToAsset()
         {
@@ -66,7 +67,7 @@ namespace com.unity.cliprojectsetup
 #else
             settingsAsset.AntiAliasing = QualitySettings.antiAliasing;
 #endif
-            SaveCurrentSettingsAsset(settingsAsset);
+            SaveSettingsAssetOnStartup(settingsAsset);
         }
 
         private void GetPackageUnderTestVersionInfo(CurrentSettings settingsAsset)
@@ -134,19 +135,27 @@ namespace com.unity.cliprojectsetup
             return revision;
         }
 
-        public static void SaveCurrentSettingsAsset(CurrentSettings settingsAsset)
+        public static void SaveSettingsAsset(CurrentSettings settingsAsset)
         {
             if (!Directory.Exists(resourceDir))
             {
                 Directory.CreateDirectory(resourceDir);
             }
-
             if (!Resources.FindObjectsOfTypeAll<CurrentSettings>().Any())
             {
-                AssetDatabase.CreateAsset(settingsAsset, resourceDir + "/settings.asset");
-            };
-
+                AssetDatabase.CreateAsset(settingsAsset, resourceDir + settingsAssetName);
+            }
             EditorUtility.SetDirty(settingsAsset);
+            AssetDatabase.SaveAssets();
+        }
+
+        private void SaveSettingsAssetOnStartup(CurrentSettings settingsAsset)
+        {
+            if (!Directory.Exists(resourceDir))
+            {
+                Directory.CreateDirectory(resourceDir);
+            }
+            AssetDatabase.CreateAsset(settingsAsset, resourceDir + settingsAssetName);
             AssetDatabase.SaveAssets();
         }
     }

@@ -18,6 +18,7 @@ namespace com.unity.cliprojectsetup
     public class PlatformSettings
     {
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
+
         public GraphicsDeviceType PlayerGraphicsApi;
         public string PackageUnderTestName;
         public string PackageUnderTestRevision;
@@ -25,6 +26,7 @@ namespace com.unity.cliprojectsetup
         public string PackageUnderTestBranch;
 
         private static readonly string resourceDir = "Assets/Resources";
+        private static readonly string settingsAssetName = "/settings.asset";
         private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
@@ -40,7 +42,7 @@ namespace com.unity.cliprojectsetup
         public string TestsRevision;
         public string TestsRevisionDate;
         public string Username;
-        private static readonly string settingsAssetName = "/settings.asset";
+        public string JobLink;
 
         public void SerializeToAsset()
         {
@@ -57,6 +59,7 @@ namespace com.unity.cliprojectsetup
             settingsAsset.TestsRevision = TestsRevision;
             settingsAsset.TestsRevisionDate = TestsRevisionDate;
             settingsAsset.TestsBranch = TestsBranch;
+            settingsAsset.JobLink = JobLink;
             GetPackageUnderTestVersionInfo(settingsAsset);
             settingsAsset.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";
 

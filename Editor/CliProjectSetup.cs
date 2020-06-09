@@ -55,11 +55,11 @@ namespace com.unity.cliprojectsetup
                     new[] {platformSettings.PlayerGraphicsApi});
             }
 
+            PlayerSettings.graphicsJobs = platformSettings.GraphicsJobs;
+            PlayerSettings.MTRendering = platformSettings.MtRendering;
             PlayerSettings.colorSpace = platformSettings.ColorSpace;
-
             PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
                 platformSettings.ScriptingImplementation);
-
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
         }
 
@@ -103,6 +103,9 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("packageundertestbranch=",
                 "branch of the logging repo being used.",
                 packageundertestbranch => platformSettings.PackageUnderTestBranch = packageundertestbranch);
+            optionsSet.Add("joblink=",
+                "Hyperlink to test job.",
+                joblink => platformSettings.JobLink = joblink);
             return optionsSet;
         }
 

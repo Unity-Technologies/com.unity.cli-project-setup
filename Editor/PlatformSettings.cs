@@ -43,6 +43,7 @@ namespace com.unity.cliprojectsetup
         public string TestsRevisionDate;
         public string Username;
         public string JobLink;
+        public int? JobWorkerCount;
 
         public void SerializeToAsset()
         {
@@ -60,6 +61,8 @@ namespace com.unity.cliprojectsetup
             settingsAsset.TestsRevisionDate = TestsRevisionDate;
             settingsAsset.TestsBranch = TestsBranch;
             settingsAsset.JobLink = JobLink;
+            settingsAsset.JobWorkerCount = JobWorkerCount ?? Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
+
             GetPackageUnderTestVersionInfo(settingsAsset);
             settingsAsset.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";
 

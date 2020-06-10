@@ -61,6 +61,11 @@ namespace com.unity.cliprojectsetup
             PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
                 platformSettings.ScriptingImplementation);
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
+
+            if (platformSettings.JobWorkerCount != null)
+            {
+                Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = (int)platformSettings.JobWorkerCount;
+            }
         }
 
         private OptionSet DefineOptionSet()
@@ -106,6 +111,15 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("joblink=",
                 "Hyperlink to test job.",
                 joblink => platformSettings.JobLink = joblink);
+            optionsSet.Add("jobworkercount=",
+                "Number of job workers to use.",
+                jobworkercount =>
+                {
+                    if (jobworkercount != null)
+                    {
+                        platformSettings.JobWorkerCount = Convert.ToInt32(jobworkercount);
+                    }
+                });
             return optionsSet;
         }
 

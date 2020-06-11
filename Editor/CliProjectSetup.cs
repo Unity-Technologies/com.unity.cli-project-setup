@@ -64,7 +64,15 @@ namespace com.unity.cliprojectsetup
 
             if (platformSettings.JobWorkerCount != null)
             {
-                Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = (int)platformSettings.JobWorkerCount;
+                try
+                {
+                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = (int)platformSettings.JobWorkerCount;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Exception caught while trying to set JobWorkerCount to {platformSettings.JobWorkerCount}. Exception: {e.Message}");
+                }
+                
             }
         }
 

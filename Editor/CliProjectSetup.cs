@@ -18,6 +18,7 @@ namespace com.unity.cliprojectsetup
         {
             ParseCommandLineArgs();
             ConfigureSettings();
+            platformSettings.SerializeToAsset();
         }
 
         private void ParseCommandLineArgs()
@@ -26,7 +27,6 @@ namespace com.unity.cliprojectsetup
             EnsureOptionsLowerCased(args);
             var optionSet = DefineOptionSet();
             var unParsedArgs = optionSet.Parse(args);
-            platformSettings.SerializeToAsset();
         }
 
         private void EnsureOptionsLowerCased(string[] args)
@@ -62,7 +62,7 @@ namespace com.unity.cliprojectsetup
                 platformSettings.ScriptingImplementation);
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
 
-            if (platformSettings.JobWorkerCount != null)
+            if (platformSettings.JobWorkerCount != null && platformSettings.JobWorkerCount >= 0)
             {
                 try
                 {
@@ -70,7 +70,11 @@ namespace com.unity.cliprojectsetup
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Exception caught while trying to set JobWorkerCount to {platformSettings.JobWorkerCount}. Exception: {e.Message}");
+                    // If we try to set the JobWorkerCount to more than the number of cores - 1 for a given machine,
+                    // an exception is thrown. In this case, catch the exception and just use the default JobWorkerCount,
+                    // then save this as the value used in our platformSettings.
+                    Debug.Log($"Exception caught while trying to set JobWorkerCount to {platformSettings.JobWorkerCount}. Exception: {e.Message}");
+                    platformSettings.JobWorkerCount = Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
                 }
                 
             }

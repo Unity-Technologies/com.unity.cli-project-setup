@@ -62,11 +62,11 @@ namespace com.unity.cliprojectsetup
                 platformSettings.ScriptingImplementation);
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
 
-            if (platformSettings.JobWorkerCount != null && platformSettings.JobWorkerCount >= 0)
+            if (platformSettings.JobWorkerCount >= 0)
             {
                 try
                 {
-                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = (int)platformSettings.JobWorkerCount;
+                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = platformSettings.JobWorkerCount;
                 }
                 catch (Exception e)
                 {
@@ -124,7 +124,7 @@ namespace com.unity.cliprojectsetup
                 "Hyperlink to test job.",
                 joblink => platformSettings.JobLink = joblink);
             optionsSet.Add("jobworkercount=",
-                "Number of job workers to use.",
+                "Number of job workers to use. Range is 0 - number of cores minus 1.",
                 jobworkercount =>
                 {
                     if (jobworkercount != null)

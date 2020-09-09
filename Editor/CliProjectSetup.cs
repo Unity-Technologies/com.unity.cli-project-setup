@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using NDesk.Options;
 /* TODO: Revisit burst logic when we're using it
@@ -22,7 +24,20 @@ namespace com.unity.cliprojectsetup
         {
             ParseCommandLineArgs();
             ConfigureSettings();
+            SetEditorBuildSettingsScenes();
             platformSettings.SerializeToAsset();
+        }
+
+        public void SetEditorBuildSettingsScenes()
+        {
+            // Find valid Scene paths and make a list of EditorBuildSettingsScene
+            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+
+            editorBuildSettingsScenes.Add(new EditorBuildSettingsScene("Assets/scenes/Testing/benchmark_island-static.unity", true));
+
+
+            // Set the Build Settings window Scene list
+            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
         }
 
         private void ParseCommandLineArgs()

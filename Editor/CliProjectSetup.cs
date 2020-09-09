@@ -2,9 +2,11 @@
 using System;
 using System.Text.RegularExpressions;
 using NDesk.Options;
+/* TODO: Revisit burst logic when we're using it
 #if ENABLE_BURST_AOT
 using Unity.Burst;
 #endif
+*/
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -66,9 +68,11 @@ namespace com.unity.cliprojectsetup
             PlayerSettings.stripEngineCode = platformSettings.StringEngineCode;
             PlayerSettings.SetManagedStrippingLevel(EditorUserBuildSettings.selectedBuildTargetGroup, platformSettings.ManagedStrippingLevel);
             EditorUserBuildSettings.allowDebugging = platformSettings.ScriptDebugging;
+/* TODO: Revisit burst logic when we're using it
 #if ENABLE_BURST_AOT
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
 #endif
+*/
 
             if (platformSettings.JobWorkerCount >= 0)
             {

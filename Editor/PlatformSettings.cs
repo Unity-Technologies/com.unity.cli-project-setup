@@ -1,10 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using com.unity.test.performance.runtimesettings;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -24,14 +26,6 @@ namespace com.unity.cliprojectsetup
         public string PackageUnderTestRevision;
         public string PackageUnderTestRevisionDate;
         public string PackageUnderTestBranch;
-
-        private static readonly string resourceDir = "Assets/Resources";
-        private static readonly string settingsAssetName = "/settings.asset";
-        private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         public ColorSpace ColorSpace = ColorSpace.Gamma;
         public bool EnableBurst = true;
         public bool GraphicsJobs;
@@ -48,6 +42,13 @@ namespace com.unity.cliprojectsetup
         public bool StringEngineCode;
         public ManagedStrippingLevel ManagedStrippingLevel;
         public bool ScriptDebugging;
+
+        private static readonly string resourceDir = "Assets/Resources";
+        private static readonly string settingsAssetName = "/settings.asset";
+        private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public void SerializeToAsset()
         {

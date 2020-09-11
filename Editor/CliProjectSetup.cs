@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using NDesk.Options;
 /* TODO: Revisit burst logic when we're using it
@@ -19,6 +19,7 @@ namespace com.unity.cliprojectsetup
     {
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
         private readonly PlatformSettings platformSettings = new PlatformSettings();
+        private readonly List<string> scenesToAddToBuild = new List<string>();
 
         public void ConfigureFromCmdlineArgs()
         {
@@ -30,14 +31,20 @@ namespace com.unity.cliprojectsetup
 
         public void SetEditorBuildSettingsScenes()
         {
-            // Find valid Scene paths and make a list of EditorBuildSettingsScene
-            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+            if (scenesToAddToBuild.Any())
+            {
+                var editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
 
-            editorBuildSettingsScenes.Add(new EditorBuildSettingsScene("Assets/scenes/Testing/benchmark_island-static.unity", true));
+                foreach (var scene in scenesToAddToBuild)
+                {
+                    var cleanScene = scene.Replace("\"", string.Empty);
+                    var sceneName = cleanScene.ToLower().StartsWith("assets/") ? cleanScene : "Assets/" + cleanScene;
+                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneName, true));
+                }
 
-
-            // Set the Build Settings window Scene list
-            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+                // Set the Build Settings window Scene list
+                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            }
         }
 
         private void ParseCommandLineArgs()
@@ -169,6 +176,14 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("scriptdebugging",
                 "Enable scriptdebugging. Disabled is default. Use option to enable, or use option and append '-' to disable.",
                 scriptdebugging => platformSettings.ScriptDebugging = scriptdebugging != null);
+            optionsSet.Add("addscenetobuild=", "Specify path to scene to add to the build, Path is relative to Assets folder.",
+                delegate(string addscenetobuild)
+                {
+                    if (!string.IsNullOrEmpty(addscenetobuild))
+                    {
+                        scenesToAddToBuild.Add(addscenetobuild);
+                    }
+                });
             return optionsSet;
         }
 

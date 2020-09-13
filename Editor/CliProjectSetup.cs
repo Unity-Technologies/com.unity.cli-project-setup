@@ -17,34 +17,30 @@ namespace com.unity.cliprojectsetup
 {
     public class CliProjectSetup
     {
+        /// <summary>
+        /// Symbols that will be added to the editor
+        /// </summary>
+        private static readonly string[] Symbols = {
+            "URP",
+            "USE_CUSTOM_METADATA"
+        };
+
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
         private readonly PlatformSettings platformSettings = new PlatformSettings();
-        private readonly List<string> scenesToAddToBuild = new List<string>();
 
         public void ConfigureFromCmdlineArgs()
         {
             ParseCommandLineArgs();
             ConfigureSettings();
-            SetEditorBuildSettingsScenes();
-            platformSettings.SerializeToAsset();
-        }
 
-        public void SetEditorBuildSettingsScenes()
-        {
-            if (scenesToAddToBuild.Any())
+            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+            foreach (var sceneToAddToBuild in platformSettings.ScenesToAddToBuild)
             {
-                var editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-
-                foreach (var scene in scenesToAddToBuild)
-                {
-                    var cleanScene = scene.Replace("\"", string.Empty);
-                    var sceneName = cleanScene.ToLower().StartsWith("assets/") ? cleanScene : "Assets/" + cleanScene;
-                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneName, true));
-                }
-
-                // Set the Build Settings window Scene list
-                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+                editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
             }
+
+            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            platformSettings.SerializeToAsset();
         }
 
         private void ParseCommandLineArgs()
@@ -71,9 +67,11 @@ namespace com.unity.cliprojectsetup
             // Setup all-inclusive player settings
             ConfigureCrossplatformSettings();
         }
-
+        
         private void ConfigureCrossplatformSettings()
         {
+            SetScriptingDefineSymbols();
+
             if (platformSettings.PlayerGraphicsApi != GraphicsDeviceType.Null)
             {
                 PlayerSettings.SetUseDefaultGraphicsAPIs(platformSettings.BuildTarget, false);
@@ -112,6 +110,17 @@ namespace com.unity.cliprojectsetup
                 }
                 
             }
+        }
+
+        private static void SetScriptingDefineSymbols()
+        {
+            string definesString =
+                PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            List<string> allDefines = definesString.Split(';').ToList();
+            allDefines.AddRange(Symbols.Except(allDefines));
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(
+                EditorUserBuildSettings.selectedBuildTargetGroup,
+                string.Join(";", allDefines.ToArray()));
         }
 
         private OptionSet DefineOptionSet()
@@ -177,14 +186,18 @@ namespace com.unity.cliprojectsetup
                 "Enable scriptdebugging. Disabled is default. Use option to enable, or use option and append '-' to disable.",
                 scriptdebugging => platformSettings.ScriptDebugging = scriptdebugging != null);
             optionsSet.Add("addscenetobuild=", "Specify path to scene to add to the build, Path is relative to Assets folder.",
-                delegate(string addscenetobuild)
-                {
-                    if (!string.IsNullOrEmpty(addscenetobuild))
-                    {
-                        scenesToAddToBuild.Add(addscenetobuild);
-                    }
-                });
+                AddSceneToBuildList);
             return optionsSet;
+        }
+
+        private void AddSceneToBuildList(string scene)
+        {
+            if (!string.IsNullOrEmpty(scene))
+            {
+                var cleanScene = scene.Replace("\"", string.Empty);
+                var sceneName = cleanScene.ToLower().StartsWith("assets/") ? cleanScene : "Assets/" + cleanScene;
+                platformSettings.ScenesToAddToBuild.Add(sceneName);
+            }
         }
 
         public static T TryParse<T>(string stringToParse)

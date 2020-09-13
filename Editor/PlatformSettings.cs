@@ -42,6 +42,7 @@ namespace com.unity.cliprojectsetup
         public bool StringEngineCode;
         public ManagedStrippingLevel ManagedStrippingLevel;
         public bool ScriptDebugging;
+        public List<string> ScenesToAddToBuild = new List<string>();
 
         private static readonly string resourceDir = "Assets/Resources";
         private static readonly string settingsAssetName = "/settings.asset";
@@ -71,6 +72,7 @@ namespace com.unity.cliprojectsetup
             settingsAsset.StripEngineCode = StringEngineCode;
             settingsAsset.ManagedStrippingLevel = ManagedStrippingLevel.ToString();
             settingsAsset.ScriptDebugging = ScriptDebugging;
+            settingsAsset.ScenesToAddToBuild =  string.Join("|", ScenesToAddToBuild);
 
             GetPackageUnderTestVersionInfo(settingsAsset);
             settingsAsset.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";

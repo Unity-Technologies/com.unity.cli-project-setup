@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using com.unity.test.performance.runtimesettings;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -72,7 +71,6 @@ namespace com.unity.cliprojectsetup
             settingsAsset.StripEngineCode = StringEngineCode;
             settingsAsset.ManagedStrippingLevel = ManagedStrippingLevel.ToString();
             settingsAsset.ScriptDebugging = ScriptDebugging;
-            settingsAsset.ScenesToAddToBuild =  string.Join("|", ScenesToAddToBuild);
 
             GetPackageUnderTestVersionInfo(settingsAsset);
             settingsAsset.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";

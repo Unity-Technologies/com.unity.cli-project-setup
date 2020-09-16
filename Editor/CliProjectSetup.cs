@@ -17,13 +17,9 @@ namespace com.unity.cliprojectsetup
 {
     public class CliProjectSetup
     {
-        /// <summary>
-        /// Symbols that will be added to the editor
-        /// </summary>
-        private static readonly string[] Symbols = {
-            "URP",
-            "USE_CUSTOM_METADATA"
-        };
+        public List<string> ScenesToAddToBuild = new List<string>();
+
+        private static readonly List<string> ScriptDefines = new List<string>();
 
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
         private readonly PlatformSettings platformSettings = new PlatformSettings();
@@ -32,15 +28,19 @@ namespace com.unity.cliprojectsetup
         {
             ParseCommandLineArgs();
             ConfigureSettings();
+            AddTestScenesToBuild();
+            platformSettings.SerializeToAsset();
+        }
 
+        private void AddTestScenesToBuild()
+        {
             List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-            foreach (var sceneToAddToBuild in platformSettings.ScenesToAddToBuild)
+            foreach (var sceneToAddToBuild in ScenesToAddToBuild)
             {
                 editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
             }
 
             EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
-            platformSettings.SerializeToAsset();
         }
 
         private void ParseCommandLineArgs()
@@ -64,10 +64,55 @@ namespace com.unity.cliprojectsetup
 
         private void ConfigureSettings()
         {
-            // Setup all-inclusive player settings
             ConfigureCrossplatformSettings();
+            // If Android, setup Android player settings
+            if (platformSettings.BuildTarget == BuildTarget.Android)
+            {
+                ConfigureAndroidSettings();
+            }
+
+            // If iOS, setup iOS player settings
+            if (platformSettings.BuildTarget == BuildTarget.iOS)
+            {
+                ConfigureIosSettings();
+            }
+
+            if (!string.IsNullOrEmpty(platformSettings.XrTarget))
+            {
+                var xrConfigurator = new XrConfigurator(platformSettings);
+                xrConfigurator.ConfigureXr();
+            }
         }
-        
+
+        private void ConfigureIosSettings()
+        {
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, string.Format("com.unity3d.{0}", PlayerSettings.productName));
+            PlayerSettings.iOS.appleEnableAutomaticSigning = false;
+            PlayerSettings.iOS.iOSManualProvisioningProfileType = ProvisioningProfileType.Development;
+        }
+
+        private void ConfigureAndroidSettings()
+        {
+            // If the user has specified AndroidArchitecture.ARMv7, but not specified ScriptingImplementation.Mono2x, or has incorrectly specified ScriptingImplementation.IL2CPP (not supported
+            // with mono), then set to AndroidArchitecture.ARMv7 so we're in a compatible configuration state.
+            if (platformSettings.AndroidTargetArchitecture == AndroidArchitecture.ARMv7 &&
+                platformSettings.ScriptingImplementation != ScriptingImplementation.Mono2x)
+            {
+                platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
+                PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
+                    platformSettings.ScriptingImplementation);
+            }
+
+            // If the user has specified mono scripting backend, but not specified AndroidArchitecture.ARMv7, or has incorrectly specified AndroidArchitecture.ARM64 (not supported
+            // with mono), then set to AndroidArchitecture.ARMv7 so we're in a compatible configuration state.
+            if (platformSettings.ScriptingImplementation == ScriptingImplementation.Mono2x &&
+                platformSettings.AndroidTargetArchitecture != AndroidArchitecture.ARMv7)
+            {
+                platformSettings.AndroidTargetArchitecture = AndroidArchitecture.ARMv7;
+            }
+            PlayerSettings.Android.targetArchitectures = platformSettings.AndroidTargetArchitecture;
+        }
+
         private void ConfigureCrossplatformSettings()
         {
             SetScriptingDefineSymbols();
@@ -93,7 +138,6 @@ namespace com.unity.cliprojectsetup
             BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
 #endif
 */
-
             if (platformSettings.JobWorkerCount >= 0)
             {
                 try
@@ -117,10 +161,10 @@ namespace com.unity.cliprojectsetup
             string definesString =
                 PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
             List<string> allDefines = definesString.Split(';').ToList();
-            allDefines.AddRange(Symbols.Except(allDefines));
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                EditorUserBuildSettings.selectedBuildTargetGroup,
-                string.Join(";", allDefines.ToArray()));
+            var collection = ScriptDefines.Except(allDefines);
+            allDefines.AddRange(collection);
+            var defines = string.Join(";", allDefines.ToArray());
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defines);
         }
 
         private OptionSet DefineOptionSet()
@@ -152,17 +196,32 @@ namespace com.unity.cliprojectsetup
                 "Enable burst. Enabled is default. Use option to disable: -enableburst",
                 option => platformSettings.EnableBurst = option != null);
             optionsSet.Add("packageundertestname=",
-                "logging commit revision id",
+                "package under test commit revision id",
                 packageundertestname => platformSettings.PackageUnderTestName = packageundertestname);
+            optionsSet.Add("packageundertestversion=",
+                "package under test version",
+                packageundertestrev => platformSettings.PackageUnderTestVersion = packageundertestrev);
             optionsSet.Add("packageundertestrev=",
-                "logging commit revision id",
+                "package under test commit revision id",
                 packageundertestrev => platformSettings.PackageUnderTestRevision = packageundertestrev);
             optionsSet.Add("packageundertestrevdate=",
-                "logging commit revision date",
+                "package under test commit revision date",
                 packageundertestrevdate => platformSettings.PackageUnderTestRevisionDate = packageundertestrevdate);
             optionsSet.Add("packageundertestbranch=",
-                "branch of the logging repo being used.",
+                "branch of the package under test repo being used.",
                 packageundertestbranch => platformSettings.PackageUnderTestBranch = packageundertestbranch);
+            optionsSet.Add("testprojectname=",
+                "test project commit revision id",
+                testprojectname => platformSettings.TestProjectName = testprojectname);
+            optionsSet.Add("testprojectrevision=",
+                "test project commit revision id",
+                testprojectrevision => platformSettings.TestProjectRevision = testprojectrevision);
+            optionsSet.Add("testprojectrevdate=",
+                "test project commit revision date",
+                testprojectrevdate => platformSettings.TestProjectRevisionDate = testprojectrevdate);
+            optionsSet.Add("testprojectbranch=",
+                "branch of the test project repo being used.",
+                testprojectbranch => platformSettings.TestProjectBranch = testprojectbranch);
             optionsSet.Add("joblink=",
                 "Hyperlink to test job.",
                 joblink => platformSettings.JobLink = joblink);
@@ -176,17 +235,41 @@ namespace com.unity.cliprojectsetup
                     }
                 });
             optionsSet.Add("apicompatibilitylevel=", "API compatibility to use. Default is NET_2_0",
-                apicompatibilitylevel => platformSettings.ApiCompatibilityLevel = TryParse<ApiCompatibilityLevel>(apicompatibilitylevel));
+                apicompatibilitylevel => platformSettings.ApiCompatibilityLevel =
+                    TryParse<ApiCompatibilityLevel>(apicompatibilitylevel));
             optionsSet.Add("stripenginecode",
                 "Enable Engine code stripping. Disabled is default. Use option to enable, or use option and append '-' to disable.",
                 option => platformSettings.StringEngineCode = option != null);
             optionsSet.Add("managedstrippinglevel=", "Managed stripping level to use. Default is low",
-                managedstrippinglevel => platformSettings.ManagedStrippingLevel = TryParse<ManagedStrippingLevel>(managedstrippinglevel));
+                managedstrippinglevel => platformSettings.ManagedStrippingLevel =
+                    TryParse<ManagedStrippingLevel>(managedstrippinglevel));
             optionsSet.Add("scriptdebugging",
                 "Enable scriptdebugging. Disabled is default. Use option to enable, or use option and append '-' to disable.",
                 scriptdebugging => platformSettings.ScriptDebugging = scriptdebugging != null);
-            optionsSet.Add("addscenetobuild=", "Specify path to scene to add to the build, Path is relative to Assets folder.",
+            optionsSet.Add("addscenetobuild=",
+                "Specify path to scene to add to the build, Path is relative to Assets folder.",
                 AddSceneToBuildList);
+            optionsSet.Add("enabledxrtarget|enabledxrtargets=",
+                "XR target to enable in player settings. Values: " +
+                "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"",
+                xrTarget => platformSettings.XrTarget = xrTarget);
+            optionsSet.Add("stereorenderingmode=", "Stereo rendering mode to enable. SinglePass is default",
+                srm => platformSettings.StereoRenderingMode = srm);
+            optionsSet.Add("simulationmode=",
+                "Enable Simulation modes for Windows MR in Editor. Values: \r\n\"HoloLens\"\r\n\"WindowsMR\"\r\n\"Remoting\"",
+                simMode => platformSettings.SimulationMode = simMode);
+            optionsSet.Add("deviceruntimeversion=",
+                "runtime version of the device we're running on.",
+                deviceruntime => platformSettings.DeviceRuntimeVersion = string.Format("deviceruntimeversion|{0}", deviceruntime));
+            optionsSet.Add("ffrlevel=",
+                "ffr level we're running at",
+                ffrlevel => platformSettings.FfrLevel = string.Format("ffrlevel|{0}", ffrlevel));
+            optionsSet.Add("androidtargetarchitecture=",
+                "Android Target Architecture to use.",
+                androidtargetarchitecture => platformSettings.AndroidTargetArchitecture = TryParse<AndroidArchitecture>(androidtargetarchitecture));
+            optionsSet.Add("scriptdefine=",
+                "String to add to the player setting script defines.",
+                scriptDefine => ScriptDefines.AddRange(scriptDefine.Split(';')));
             return optionsSet;
         }
 
@@ -196,7 +279,7 @@ namespace com.unity.cliprojectsetup
             {
                 var cleanScene = scene.Replace("\"", string.Empty);
                 var sceneName = cleanScene.ToLower().StartsWith("assets/") ? cleanScene : "Assets/" + cleanScene;
-                platformSettings.ScenesToAddToBuild.Add(sceneName);
+                ScenesToAddToBuild.Add(sceneName);
             }
         }
 

@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using com.unity.test.performance.runtimesettings;
+#if OCULUS_SDK
+using Unity.XR.Oculus;
+#endif
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -13,15 +16,25 @@ using UnityEditor.PackageManager;
 #if URP
 using UnityEngine.Rendering.Universal;
 #endif
+#if ENABLE_VR
+using UnityEngine.XR;
+#endif
 
 namespace com.unity.cliprojectsetup
 {
     public class PlatformSettings
-    {
+    { 
+#if UNITY_EDITOR
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
-
+        public BuildTargetGroup BuildTargetGroup => EditorUserBuildSettings.selectedBuildTargetGroup;
+        public ScriptingImplementation ScriptingImplementation = ScriptingImplementation.IL2CPP;
+        public ApiCompatibilityLevel ApiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
+        public AndroidArchitecture AndroidTargetArchitecture = AndroidArchitecture.ARM64;
+        public ManagedStrippingLevel ManagedStrippingLevel;
+#endif
         public GraphicsDeviceType PlayerGraphicsApi;
         public string PackageUnderTestName;
+        public string PackageUnderTestVersion;
         public string PackageUnderTestRevision;
         public string PackageUnderTestRevisionDate;
         public string PackageUnderTestBranch;
@@ -30,18 +43,27 @@ namespace com.unity.cliprojectsetup
         public bool GraphicsJobs;
         public bool MtRendering = true;
         public string RenderPipeline;
-        public ScriptingImplementation ScriptingImplementation = ScriptingImplementation.IL2CPP;
         public string TestsBranch;
         public string TestsRevision;
         public string TestsRevisionDate;
         public string Username;
         public string JobLink;
         public int JobWorkerCount = -1; // sentinel value indicating we don't want to set the JobWorkerCount
-        public ApiCompatibilityLevel ApiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
         public bool StringEngineCode;
-        public ManagedStrippingLevel ManagedStrippingLevel;
         public bool ScriptDebugging;
-        public List<string> ScenesToAddToBuild = new List<string>();
+        public string TestProjectName;
+        public string TestProjectRevision;
+        public string TestProjectRevisionDate;
+        public string TestProjectBranch;
+        public string EnabledXrTarget;
+        public string StereoRenderingMode;
+        public string StereoRenderingModeDesktop;
+        public string StereoRenderingModeAndroid;
+        public string SimulationMode;
+        public string PluginVersion;
+        public string XrTarget;
+        public string DeviceRuntimeVersion;
+        public string FfrLevel;
 
         private static readonly string resourceDir = "Assets/Resources";
         private static readonly string settingsAssetName = "/settings.asset";
@@ -49,6 +71,7 @@ namespace com.unity.cliprojectsetup
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        
 
         public void SerializeToAsset()
         {
@@ -62,6 +85,10 @@ namespace com.unity.cliprojectsetup
             settingsAsset.ColorSpace = ColorSpace.ToString();
             settingsAsset.Username = Username = Environment.UserName;
             settingsAsset.PackageUnderTestName = PackageUnderTestName;
+            settingsAsset.PackageUnderTestVersion = PackageUnderTestVersion;
+            settingsAsset.PackageUnderTestRevision = PackageUnderTestRevision;
+            settingsAsset.PackageUnderTestRevisionDate = PackageUnderTestRevisionDate;
+            settingsAsset.PackageUnderTestBranch = PackageUnderTestBranch;
             settingsAsset.TestsRevision = TestsRevision;
             settingsAsset.TestsRevisionDate = TestsRevisionDate;
             settingsAsset.TestsBranch = TestsBranch;
@@ -71,6 +98,20 @@ namespace com.unity.cliprojectsetup
             settingsAsset.StripEngineCode = StringEngineCode;
             settingsAsset.ManagedStrippingLevel = ManagedStrippingLevel.ToString();
             settingsAsset.ScriptDebugging = ScriptDebugging;
+            settingsAsset.TestProjectName = TestProjectName;
+            settingsAsset.TestProjectRevision = TestProjectRevision;
+            settingsAsset.TestProjectRevisionDate = TestProjectRevisionDate;
+            settingsAsset.TestProjectBranch = TestProjectBranch;
+            settingsAsset.EnabledXrTarget = EnabledXrTarget;
+            settingsAsset.StereoRenderingMode = StereoRenderingMode;
+            settingsAsset.StereoRenderingModeDesktop = StereoRenderingModeDesktop;
+            settingsAsset.StereoRenderingModeAndroid = StereoRenderingModeAndroid;
+            settingsAsset.SimulationMode = SimulationMode;
+            settingsAsset.PluginVersion = PluginVersion;
+            settingsAsset.DeviceRuntimeVersion = DeviceRuntimeVersion;
+            settingsAsset.FfrLevel = FfrLevel;
+            settingsAsset.AndroidTargetArchitecture = AndroidTargetArchitecture.ToString();
+            settingsAsset.StereoRenderingMode = StereoRenderingMode;
 
             GetPackageUnderTestVersionInfo(settingsAsset);
             settingsAsset.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";
@@ -81,6 +122,33 @@ namespace com.unity.cliprojectsetup
                 : QualitySettings.antiAliasing;
 #else
             settingsAsset.AntiAliasing = QualitySettings.antiAliasing;
+#endif
+
+#if OCULUS_SDK
+            // These fields are used by the performance test framework and are an artifact from this class
+            // previously using the provider - specific enums before converting to a cross-platform friendly string
+            if (BuildTarget == BuildTarget.Android)
+            {
+                settingsAsset.StereoRenderingModeAndroid = StereoRenderingPath;
+            }
+            else
+            {
+                settingsAsset.StereoRenderingModeDesktop = StereoRenderingPath;
+            }
+            
+#if OCULUS_SDK_PERF
+            settingsAsset.PluginVersion = string.Format("OculusPluginVersion|{0}", OculusStats.PluginVersion);
+#endif
+#endif
+#if XR_SDK
+            settingsAsset.StereoRenderingMode = StereoRenderingPath;
+#else
+            if (!string.IsNullOrEmpty(StereoRenderingMode))
+            {
+                // legacy xr has different enum for player settings and runtime settings for stereo rendering mode
+                var builtInXrStereoPath = (StereoRenderingPath)Enum.Parse(typeof(StereoRenderingPath), StereoRenderingMode);
+                settingsAsset.StereoRenderingMode = GetXrStereoRenderingPathMapping(builtInXrStereoPath).ToString();
+            }
 #endif
             SaveSettingsAssetOnStartup(settingsAsset);
         }
@@ -119,7 +187,7 @@ namespace com.unity.cliprojectsetup
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to infer
                 // the branch from the major.minor version of the package via the package manager API
-                settingsAsset.PackageUnderTestPackageBranch = string.IsNullOrEmpty(PackageUnderTestBranch)
+                settingsAsset.PackageUnderTestBranch = string.IsNullOrEmpty(PackageUnderTestBranch)
                     ? TryGetPackageUnderTestBranch(packageUnderTestInfo.version)
                     : PackageUnderTestBranch;
             }
@@ -149,7 +217,7 @@ namespace com.unity.cliprojectsetup
 
             return revision;
         }
-
+#if UNITY_EDITOR
         public static void SaveSettingsAsset(CurrentSettings settingsAsset)
         {
             if (!Directory.Exists(resourceDir))
@@ -173,6 +241,24 @@ namespace com.unity.cliprojectsetup
             AssetDatabase.CreateAsset(settingsAsset, resourceDir + settingsAssetName);
             AssetDatabase.SaveAssets();
         }
+
+#if ENABLE_VR
+        private XRSettings.StereoRenderingMode GetXrStereoRenderingPathMapping(StereoRenderingPath stereoRenderingPath)
+        {
+            switch (stereoRenderingPath)
+            {
+                case UnityEditor.StereoRenderingPath.SinglePass:
+                    return XRSettings.StereoRenderingMode.SinglePass;
+                case UnityEditor.StereoRenderingPath.MultiPass:
+                    return XRSettings.StereoRenderingMode.MultiPass;
+                case UnityEditor.StereoRenderingPath.Instancing:
+                    return XRSettings.StereoRenderingMode.SinglePassInstanced;
+                default:
+                    return XRSettings.StereoRenderingMode.SinglePassMultiview;
+            }
+        }
+#endif
+#endif
     }
 }
 #endif

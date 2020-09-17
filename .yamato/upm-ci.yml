@@ -1,98 +1,145 @@
-test_editors:
-  - version: 2019.1
+editors:
   - version: trunk
-test_platforms:
-  - name: win
+  - version: 2020.1
+  - version: 2019.3
+platforms:
+  - name: Windows64
+    os: windows
     type: Unity::VM
     image: package-ci/win10:stable
     flavor: b1.large
-  - name: mac
+  - name: OSX_OpenGLCore
+    os: macos
     type: Unity::VM::osx
-    image: buildfarm/mac:stable
+    image: package-ci/mac:stable
     flavor: m1.mac
+packages:
+  - name: CliProjectSetup
+    id: cli
+    packagename: com.unity.cli-project-setup
+    dependencies:
+      - .yamato/upm-ci.yml#pack_cli
 ---
-pack:
-  name: Pack
+{% for package in packages %}
+pack_{{ package.id }}:
+  name: z_(do not use) Pack {{ package.name }}
   agent:
     type: Unity::VM
     image: package-ci/win10:stable
     flavor: b1.large
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
     - upm-ci package pack
   artifacts:
     packages:
       paths:
-        - "upm-ci~/**/*"
+        - "upm-ci~/packages/**/*"
+{% endfor %}
 
-{% for editor in test_editors %}
-{% for platform in test_platforms %}
-test_{{ platform.name }}_{{ editor.version }}:
-  name : Test {{ editor.version }} on {{ platform.name }}
+{% for editor in editors %}
+{% for platform in platforms %}
+{% for package in packages %}
+test_{{ package.id }}_{{ platform.name }}_{{ editor.version }}:
+  name: Test {{ package.name }} {{ platform.name }} {{ editor.version }}
   agent:
     type: {{ platform.type }}
     image: {{ platform.image }}
-    flavor: {{ platform.flavor}}
+    flavor: {{ platform.flavor }}
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
-    - upm-ci package test --unity-version {{ editor.version }}
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
+    - pip install unity-downloader-cli --index-url https://artifactory.prd.it.unity3d.com/artifactory/api/pypi/pypi/simple --upgrade
+    - unity-downloader-cli --source-file unity_revision.txt -c editor --wait --published-only
+    - upm-ci package test -u .Editor
   artifacts:
     logs:
       paths:
-        - "upm-ci~/test-results/**/*"
+        - "**/upm-ci~/test-results/**/*"
   dependencies:
-    - .yamato/upm-ci.yml#pack
+  - .yamato/z_editor.yml#editor:priming:{{ editor.version }}:{{ platform.os }}
+  {% for dep in package.dependencies %}
+  - {{ dep }}
+  {% endfor %}
+{% endfor %}
 {% endfor %}
 {% endfor %}
 
-test_trigger:
-  name: Tests Trigger
+all_package_ci:
+  name: Pack and test all packages
   agent:
     type: Unity::VM
     image: package-ci/win10:stable
     flavor: b1.large
   commands:
-    - dir
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
+    - upm-ci package izon -t
+    - upm-ci package izon -d
+  dependencies:
+{% for editor in editors %}
+{% for platform in platforms %}
+{% for package in packages %}
+    - path: .yamato/upm-ci.yml#test_{{ package.id}}_{{ platform.name }}_{{ editor.version }}
+      rerun: always
+{% endfor %}
+{% endfor %}
+{% endfor %}
   triggers:
-    branches:
-      only:
-        - "/.*/"
-  artifacts:
-    logs:
-      paths:
-        - "upm-ci~/test-results/**/*"
-    packages:
-      paths:
-        - "upm-ci~/packages/**/*"
-  dependencies:
-    - .yamato/upm-ci.yml#pack
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/upm-ci.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
+    recurring:
+      - branch: master
+        frequency: daily
+    expression: pull_request.target eq "master" AND NOT pull_request.draft AND NOT pull_request.push.changes.all match ["**/*.md", "doc/**/*", "**/Documentation*/**/*"]
 
-publish:
-  name: Publish to Internal Registry
+{% for package in packages %}
+publish_{{ package.id }}:
+  name: Publish {{ package.name }}
   agent:
     type: Unity::VM
     image: package-ci/win10:stable
     flavor: b1.large
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
     - upm-ci package publish
-  triggers:
-    tags:
-      only:
-        - /^(r|R)(c|C)-\d+\.\d+\.\d+(-preview(\.\d+)?)?$/
   artifacts:
-    artifacts:
+    packages:
       paths:
         - "upm-ci~/packages/*.tgz"
   dependencies:
-    - .yamato/upm-ci.yml#pack
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/upm-ci.yml#test_{{ platform.name }}_{{ editor.version }}
-    {% endfor %}
-    {% endfor %}
+    - .yamato/upm-ci.yml#pack_{{ package.id }}
+{% for editor in editors %}
+{% for platform in platforms %}
+    - .yamato/upm-ci.yml#test_{{ package.id}}_{{ platform.name }}_{{ editor.version }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+publish_all:
+  name: Publish all packages
+  dependencies:
+{% for package in packages %}
+    - .yamato/upm-ci.yml#publish_{{ package.id }}
+{% endfor %}
+
+{% for package in packages %}
+promote_{{ package.id }}:
+  name: promote {{ package.name }}
+  agent:
+    type: Unity::VM
+    image: package-ci/win10:stable
+    flavor: b1.large
+  variables:
+    UPMCI_PROMOTION: 1
+  commands:
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
+    - upm-ci package promote
+  artifacts:
+    packages:
+      paths:
+       - "upm-ci~/packages/*.tgz"
+  dependencies:
+   - .yamato/upm-ci.yml#pack_{{ package.id }}
+{% for editor in editors %}
+{% for platform in platforms %}
+   - .yamato/upm-ci.yml#test_{{ package.id}}_{{ platform.name }}_{{ editor.version }}
+{% endfor %}
+{% endfor %}
+   - .yamato/upm-ci.yml#publish_{{ package.id }}
+{% endfor %}

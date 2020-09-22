@@ -19,7 +19,7 @@ namespace com.unity.cliprojectsetup
     {
         public List<string> ScenesToAddToBuild = new List<string>();
 
-        private static readonly List<string> ScriptDefines = new List<string>();
+        public readonly List<string> ScriptDefines = new List<string>();
 
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
         private readonly PlatformSettings platformSettings = new PlatformSettings();
@@ -43,7 +43,7 @@ namespace com.unity.cliprojectsetup
             EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
         }
 
-        private void ParseCommandLineArgs()
+        public void ParseCommandLineArgs()
         {
             var args = Environment.GetCommandLineArgs();
             EnsureOptionsLowerCased(args);
@@ -115,7 +115,7 @@ namespace com.unity.cliprojectsetup
 
         private void ConfigureCrossplatformSettings()
         {
-            SetScriptingDefineSymbols();
+            //SetScriptingDefineSymbols();
 
             if (platformSettings.PlayerGraphicsApi != GraphicsDeviceType.Null)
             {
@@ -154,17 +154,6 @@ namespace com.unity.cliprojectsetup
                 }
                 
             }
-        }
-
-        private static void SetScriptingDefineSymbols()
-        {
-            string definesString =
-                PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            List<string> allDefines = definesString.Split(';').ToList();
-            var collection = ScriptDefines.Except(allDefines);
-            allDefines.AddRange(collection);
-            var defines = string.Join(";", allDefines.ToArray());
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defines);
         }
 
         private OptionSet DefineOptionSet()

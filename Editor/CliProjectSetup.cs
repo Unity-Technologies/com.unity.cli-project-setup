@@ -28,19 +28,25 @@ namespace com.unity.cliprojectsetup
         {
             ParseCommandLineArgs();
             ConfigureSettings();
-            AddTestScenesToBuild();
+            AddTestScenesToBuild(ScenesToAddToBuild);
             platformSettings.SerializeToAsset();
         }
 
-        private void AddTestScenesToBuild()
+        public static void AddTestScenesToBuild(List<string> scenesToAddToBuild)
         {
-            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-            foreach (var sceneToAddToBuild in ScenesToAddToBuild)
-            {
-                editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
-            }
+            var currentScenesInBuild = EditorBuildSettings.scenes.Select(s=>s.path).ToList();
+            //var scenesToAdd = scenesToAddToBuild.Where(p => currentScenesInBuild.All(p2 => p2.path != (p.StartsWith("Assets/") ? p.Substring(7 - 1, p.Length - 1) : p)));
+            var scenesToAdd = scenesToAddToBuild.Where(p => currentScenesInBuild.All(p2 => p2 != p));
 
-            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            if (scenesToAdd.Any())
+            {
+                List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+                foreach (var sceneToAddToBuild in scenesToAddToBuild)
+                {
+                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
+                }
+                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            }
         }
 
         public void ParseCommandLineArgs()
@@ -268,7 +274,10 @@ namespace com.unity.cliprojectsetup
             {
                 var cleanScene = scene.Replace("\"", string.Empty);
                 var sceneName = cleanScene.ToLower().StartsWith("assets/") ? cleanScene : "Assets/" + cleanScene;
-                ScenesToAddToBuild.Add(sceneName);
+                if (!ScenesToAddToBuild.Contains(sceneName))
+                {
+                    ScenesToAddToBuild.Add(sceneName);
+                }
             }
         }
 

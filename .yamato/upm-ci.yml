@@ -1,7 +1,7 @@
 editors:
   - version: trunk
   - version: 2020.1
-  - version: 2019.3
+  - version: 2019.4
 platforms:
   - name: Windows64
     os: windows
@@ -82,11 +82,11 @@ all_package_ci:
 {% endfor %}
 {% endfor %}
 {% endfor %}
-  triggers:
-    recurring:
-      - branch: master
-        frequency: daily
-    expression: pull_request.target eq "master" AND NOT pull_request.draft AND NOT pull_request.push.changes.all match ["**/*.md", "doc/**/*", "**/Documentation*/**/*"]
+  # triggers:
+  #   recurring:
+  #     - branch: master
+  #       frequency: daily
+  #   expression: pull_request.target eq "master" AND NOT pull_request.draft AND NOT pull_request.push.changes.all match ["**/*.md", "doc/**/*", "**/Documentation*/**/*"]
 
 {% for package in packages %}
 publish_{{ package.id }}:

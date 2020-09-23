@@ -6,19 +6,13 @@
         "com.unity.tests.performance.runtimesettings",
         "Unity.Burst"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [
-        "nunit.framework.dll"
-    ],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "UNITY_INCLUDE_TESTS"
-    ],
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
 }

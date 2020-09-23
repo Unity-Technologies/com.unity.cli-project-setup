@@ -85,8 +85,8 @@ namespace com.unity.cliprojectsetup
 
             if (!string.IsNullOrEmpty(platformSettings.XrTarget))
             {
-                var xrConfigurator = new XrConfigurator(platformSettings);
-                xrConfigurator.ConfigureXr();
+                //var xrConfigurator = new XrConfigurator(platformSettings);
+                //xrConfigurator.ConfigureXr();
             }
         }
 

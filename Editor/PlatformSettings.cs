@@ -129,11 +129,11 @@ namespace com.unity.cliprojectsetup
             // previously using the provider - specific enums before converting to a cross-platform friendly string
             if (BuildTarget == BuildTarget.Android)
             {
-                settingsAsset.StereoRenderingModeAndroid = StereoRenderingPath;
+                settingsAsset.StereoRenderingModeAndroid = StereoRenderingMode;
             }
             else
             {
-                settingsAsset.StereoRenderingModeDesktop = StereoRenderingPath;
+                settingsAsset.StereoRenderingModeDesktop = StereoRenderingMode;
             }
             
 #if OCULUS_SDK_PERF
@@ -141,7 +141,7 @@ namespace com.unity.cliprojectsetup
 #endif
 #endif
 #if XR_SDK
-            settingsAsset.StereoRenderingMode = StereoRenderingPath;
+            settingsAsset.StereoRenderingMode = StereoRenderingMode;
 #else
             if (!string.IsNullOrEmpty(StereoRenderingMode))
             {

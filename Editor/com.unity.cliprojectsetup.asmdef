@@ -1,5 +1,5 @@
 {
-    "name": "com.unity.cli-project-setup",
+    "name": "com.unity.cliprojectsetup",
     "rootNamespace": "",
     "references": [
         "Unity.RenderPipelines.Universal.Runtime",

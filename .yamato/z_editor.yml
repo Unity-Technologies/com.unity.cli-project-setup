@@ -1,6 +1,6 @@
 editors:
   - version: trunk
-    cmd: -u trunk
+    cmd: -u 90b2443a8df13ecc935d91f85d723464f8a42028
   - version: 2020.1
     cmd: -u 2020.1/staging
   - version: 2019.4

@@ -6,7 +6,6 @@
         "com.unity.tests.performance.runtimesettings",
         "Unity.Burst"
     ],
-    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

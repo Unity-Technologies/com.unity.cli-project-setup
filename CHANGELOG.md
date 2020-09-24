@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.3.1-preview] - 2020-09-24
 
 * Bug fix for line ending
+* Remove empty array field in asmdef causing upm-ci error
 
 ## [0.3.0-preview] - 2020-09-24
 

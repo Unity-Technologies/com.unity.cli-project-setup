@@ -167,6 +167,10 @@ namespace com.unity.cliprojectsetup
             var optionsSet = new OptionSet();
             optionsSet.Add("scriptingbackend=",
                 "Scripting backend to use. IL2CPP is default. Values: IL2CPP, Mono", ParseScriptingBackend);
+			optionsSet.Add("scripting-backend=",
+                "Scripting backend to use. IL2CPP is default. Values: IL2CPP, Mono", ParseScriptingBackend);
+			optionsSet.Add("scriptingBackend=",
+                "Scripting backend to use. IL2CPP is default. Values: IL2CPP, Mono", ParseScriptingBackend);
             optionsSet.Add("playergraphicsapi=", "Graphics API based on GraphicsDeviceType.",
                 graphicsDeviceType =>
                     platformSettings.PlayerGraphicsApi = TryParse<GraphicsDeviceType>(graphicsDeviceType));
@@ -262,6 +266,9 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("androidtargetarchitecture=",
                 "Android Target Architecture to use.",
                 androidtargetarchitecture => platformSettings.AndroidTargetArchitecture = TryParse<AndroidArchitecture>(androidtargetarchitecture));
+			optionsSet.Add("architecture=",
+                "Android Target Architecture to use.",
+                androidtargetarchitecture => platformSettings.AndroidTargetArchitecture = TryParse<AndroidArchitecture>(androidtargetarchitecture));
             optionsSet.Add("scriptdefine=",
                 "String to add to the player setting script defines.",
                 scriptDefine => ScriptDefines.AddRange(scriptDefine.Split(';')));
@@ -299,7 +306,7 @@ namespace com.unity.cliprojectsetup
         private void ParseScriptingBackend(string scriptingBackend)
         {
             var sb = scriptingBackend.ToLower();
-            if (sb.Equals("mono"))
+            if (sb.Contains("mono"))
             {
                 platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
             }

@@ -76,7 +76,8 @@ namespace com.unity.cliprojectsetup
         public void SerializeToAsset()
         {
             var settingsAsset = ScriptableObject.CreateInstance<CurrentSettings>();
-
+            var pathParts = Application.dataPath.Split('/');
+            settingsAsset.ProjectName = pathParts[pathParts.Length - 2];
             settingsAsset.PlayerGraphicsApi = PlayerGraphicsApi.ToString();
             settingsAsset.MtRendering = MtRendering;
             settingsAsset.GraphicsJobs = GraphicsJobs;

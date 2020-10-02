@@ -35,7 +35,6 @@ namespace com.unity.cliprojectsetup
         public static void AddTestScenesToBuild(List<string> scenesToAddToBuild)
         {
             var currentScenesInBuild = EditorBuildSettings.scenes.Select(s=>s.path).ToList();
-            //var scenesToAdd = scenesToAddToBuild.Where(p => currentScenesInBuild.All(p2 => p2.path != (p.StartsWith("Assets/") ? p.Substring(7 - 1, p.Length - 1) : p)));
             var scenesToAdd = scenesToAddToBuild.Where(p => currentScenesInBuild.All(p2 => p2 != p));
 
             if (scenesToAdd.Any())

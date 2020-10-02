@@ -1,10 +1,10 @@
 {
   "name": "com.unity.cli-project-setup",
   "displayName": "Unity CLI Project Setup",
-  "version": "0.3.2-preview",
+  "version": "0.3.3-preview",
   "unity": "2019.4",
   "description": "Provides a command line parser and options to set build, player, and other Unity settings when running Unity from the command line.",
   "dependencies": {
-    "com.unity.test.performance.runtimesettings": "0.2.0-preview"
+    "com.unity.test.performance.runtimesettings": "0.2.1-preview"
   }
 }

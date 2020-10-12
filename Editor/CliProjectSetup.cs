@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,8 +84,7 @@ namespace com.unity.cliprojectsetup
 
             if (!string.IsNullOrEmpty(platformSettings.XrTarget))
             {
-                //var xrConfigurator = new XrConfigurator(platformSettings);
-                //xrConfigurator.ConfigureXr();
+                //TODO Ejaz to implement
             }
         }
 
@@ -116,12 +115,11 @@ namespace com.unity.cliprojectsetup
                 platformSettings.AndroidTargetArchitecture = AndroidArchitecture.ARMv7;
             }
             PlayerSettings.Android.targetArchitectures = platformSettings.AndroidTargetArchitecture;
+            QualitySettings.vSyncCount = 0;
         }
 
         private void ConfigureCrossplatformSettings()
         {
-            //SetScriptingDefineSymbols();
-
             if (platformSettings.PlayerGraphicsApi != GraphicsDeviceType.Null)
             {
                 PlayerSettings.SetUseDefaultGraphicsAPIs(platformSettings.BuildTarget, false);
@@ -134,15 +132,19 @@ namespace com.unity.cliprojectsetup
             PlayerSettings.colorSpace = platformSettings.ColorSpace;
             PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
                 platformSettings.ScriptingImplementation);
-            PlayerSettings.SetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup, platformSettings.ApiCompatibilityLevel);
+            if (platformSettings.ApiCompatibilityLevel != null)
+            {
+                PlayerSettings.SetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup, (ApiCompatibilityLevel) platformSettings.ApiCompatibilityLevel);
+            }
+            
             PlayerSettings.stripEngineCode = platformSettings.StringEngineCode;
             PlayerSettings.SetManagedStrippingLevel(EditorUserBuildSettings.selectedBuildTargetGroup, platformSettings.ManagedStrippingLevel);
             EditorUserBuildSettings.allowDebugging = platformSettings.ScriptDebugging;
-/* TODO: Revisit burst logic when we're using it
-#if ENABLE_BURST_AOT
-            BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
-#endif
-*/
+            /* TODO: Revisit burst logic when we're using it
+            #if ENABLE_BURST_AOT
+                        BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
+            #endif
+            */
             if (platformSettings.JobWorkerCount >= 0)
             {
                 try
@@ -157,7 +159,7 @@ namespace com.unity.cliprojectsetup
                     Debug.Log($"Exception caught while trying to set JobWorkerCount to {platformSettings.JobWorkerCount}. Exception: {e.Message}");
                     platformSettings.JobWorkerCount = Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
                 }
-                
+
             }
         }
 

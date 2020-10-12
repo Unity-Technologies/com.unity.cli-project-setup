@@ -1,6 +1,5 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,9 +25,8 @@ namespace com.unity.cliprojectsetup
     { 
 #if UNITY_EDITOR
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
-        public BuildTargetGroup BuildTargetGroup => EditorUserBuildSettings.selectedBuildTargetGroup;
         public ScriptingImplementation ScriptingImplementation = ScriptingImplementation.IL2CPP;
-        public ApiCompatibilityLevel ApiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
+        public ApiCompatibilityLevel? ApiCompatibilityLevel;
         public AndroidArchitecture AndroidTargetArchitecture = AndroidArchitecture.ARM64;
         public ManagedStrippingLevel ManagedStrippingLevel;
 #endif
@@ -65,8 +63,8 @@ namespace com.unity.cliprojectsetup
         public string DeviceRuntimeVersion;
         public string FfrLevel;
 
-        private static readonly string resourceDir = "Assets/Resources";
-        private static readonly string settingsAssetName = "/settings.asset";
+        private static readonly string ResourceDir = "Assets/Resources";
+        private static readonly string SettingsAssetName = "/settings.asset";
         private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
@@ -221,13 +219,13 @@ namespace com.unity.cliprojectsetup
 #if UNITY_EDITOR
         public static void SaveSettingsAsset(CurrentSettings settingsAsset)
         {
-            if (!Directory.Exists(resourceDir))
+            if (!Directory.Exists(ResourceDir))
             {
-                Directory.CreateDirectory(resourceDir);
+                Directory.CreateDirectory(ResourceDir);
             }
             if (!Resources.FindObjectsOfTypeAll<CurrentSettings>().Any())
             {
-                AssetDatabase.CreateAsset(settingsAsset, resourceDir + settingsAssetName);
+                AssetDatabase.CreateAsset(settingsAsset, ResourceDir + SettingsAssetName);
             }
             EditorUtility.SetDirty(settingsAsset);
             AssetDatabase.SaveAssets();
@@ -235,11 +233,11 @@ namespace com.unity.cliprojectsetup
 
         private void SaveSettingsAssetOnStartup(CurrentSettings settingsAsset)
         {
-            if (!Directory.Exists(resourceDir))
+            if (!Directory.Exists(ResourceDir))
             {
-                Directory.CreateDirectory(resourceDir);
+                Directory.CreateDirectory(ResourceDir);
             }
-            AssetDatabase.CreateAsset(settingsAsset, resourceDir + settingsAssetName);
+            AssetDatabase.CreateAsset(settingsAsset, ResourceDir + SettingsAssetName);
             AssetDatabase.SaveAssets();
         }
 

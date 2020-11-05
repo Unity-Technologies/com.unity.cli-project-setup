@@ -3,8 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.RenderPipelines.Universal.Runtime",
-        "com.unity.tests.performance.runtimesettings",
-        "Unity.Burst"
+        "Unity.Burst",
+        "com.unity.test.metadata-manager"
     ],
     "includePlatforms": [
         "Editor"

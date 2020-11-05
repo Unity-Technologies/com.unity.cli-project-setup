@@ -115,7 +115,6 @@ namespace com.unity.cliprojectsetup
                 platformSettings.AndroidTargetArchitecture = AndroidArchitecture.ARMv7;
             }
             PlayerSettings.Android.targetArchitectures = platformSettings.AndroidTargetArchitecture;
-            QualitySettings.vSyncCount = 0;
         }
 
         private void ConfigureCrossplatformSettings()
@@ -127,6 +126,8 @@ namespace com.unity.cliprojectsetup
                     new[] {platformSettings.PlayerGraphicsApi});
             }
 
+            // Default to no vsync for performance tests
+            QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
             PlayerSettings.graphicsJobs = platformSettings.GraphicsJobs;
             PlayerSettings.MTRendering = platformSettings.MtRendering;
             PlayerSettings.colorSpace = platformSettings.ColorSpace;
@@ -266,8 +267,11 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("scriptdefine=",
                 "String to add to the player setting script defines.",
                 scriptDefine => ScriptDefines.AddRange(scriptDefine.Split(';')));
+            optionsSet.Add("vsync=",
+                "test project commit revision id", vsync => platformSettings.Vsync = vsync);
             return optionsSet;
         }
+
 
         private void AddSceneToBuildList(string scene)
         {

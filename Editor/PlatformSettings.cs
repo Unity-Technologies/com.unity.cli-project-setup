@@ -121,7 +121,7 @@ namespace com.unity.cliprojectsetup
                 ? ((UniversalRenderPipelineAsset) GraphicsSettings.renderPipelineAsset).msaaSampleCount
                 : QualitySettings.antiAliasing;
 #else
-            settingsAsset.AntiAliasing = QualitySettings.antiAliasing;
+            settings.AntiAliasing = QualitySettings.antiAliasing;
 #endif
 
 #if OCULUS_SDK
@@ -129,19 +129,19 @@ namespace com.unity.cliprojectsetup
             // previously using the provider - specific enums before converting to a cross-platform friendly string
             if (BuildTarget == BuildTarget.Android)
             {
-                settingsAsset.StereoRenderingModeAndroid = StereoRenderingMode;
+                settings.StereoRenderingModeAndroid = StereoRenderingMode;
             }
             else
             {
-                settingsAsset.StereoRenderingModeDesktop = StereoRenderingMode;
+                settings.StereoRenderingModeDesktop = StereoRenderingMode;
             }
             
 #if OCULUS_SDK_PERF
-            settingsAsset.PluginVersion = string.Format("OculusPluginVersion|{0}", OculusStats.PluginVersion);
+            settings.PluginVersion = string.Format("OculusPluginVersion|{0}", OculusStats.PluginVersion);
 #endif
 #endif
 #if XR_SDK
-            settingsAsset.StereoRenderingMode = StereoRenderingMode;
+            settings.StereoRenderingMode = StereoRenderingMode;
 #else
             if (!string.IsNullOrEmpty(StereoRenderingMode))
             {
@@ -153,7 +153,7 @@ namespace com.unity.cliprojectsetup
             CustomMetadataManager.SaveSettingsAssetInEditor();
         }
 
-        private void GetPackageUnderTestVersionInfo(CurrentSettings settingsAsset)
+        private void GetPackageUnderTestVersionInfo(CurrentSettings settings)
         {
             var listRequest = Client.List(true);
             while (!listRequest.IsCompleted)
@@ -165,13 +165,13 @@ namespace com.unity.cliprojectsetup
                 var packageUnderTestInfo =
                     listRequest.Result.First(r => r.name.Equals(PackageUnderTestName));
 
-                settingsAsset.PackageUnderTestVersion = packageUnderTestInfo.version;
+                settings.PackageUnderTestVersion = packageUnderTestInfo.version;
 
                 // if PackageRevision is empty, then it wasn't passed in on the command line (which is
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to get
                 // the revision from the package.json.
-                settingsAsset.PackageUnderTestRevision = string.IsNullOrEmpty(PackageUnderTestRevision) ? 
+                settings.PackageUnderTestRevision = string.IsNullOrEmpty(PackageUnderTestRevision) ? 
                     TryGetRevisionFromPackageJson(PackageUnderTestRevision) 
                     : PackageUnderTestRevision;
 
@@ -179,7 +179,7 @@ namespace com.unity.cliprojectsetup
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to get
                 // the revision date from the package manager api instead.
-                settingsAsset.PackageUnderTestRevisionDate = string.IsNullOrEmpty(PackageUnderTestRevisionDate)
+                settings.PackageUnderTestRevisionDate = string.IsNullOrEmpty(PackageUnderTestRevisionDate)
                     ? TryGetPackageUnderTestRevisionDate(packageUnderTestInfo.datePublished)
                     : PackageUnderTestRevisionDate;
 
@@ -187,7 +187,7 @@ namespace com.unity.cliprojectsetup
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to infer
                 // the branch from the major.minor version of the package via the package manager API
-                settingsAsset.PackageUnderTestBranch = string.IsNullOrEmpty(PackageUnderTestBranch)
+                settings.PackageUnderTestBranch = string.IsNullOrEmpty(PackageUnderTestBranch)
                     ? TryGetPackageUnderTestBranch(packageUnderTestInfo.version)
                     : PackageUnderTestBranch;
             }

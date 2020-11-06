@@ -34,18 +34,15 @@ namespace com.unity.cliprojectsetup
 
         public static void AddTestScenesToBuild(List<string> scenesToAddToBuild)
         {
-            var currentScenesInBuild = EditorBuildSettings.scenes.Select(s=>s.path).ToList();
-            var scenesToAdd = scenesToAddToBuild.Where(p => currentScenesInBuild.All(p2 => p2 != p));
 
-            if (scenesToAdd.Any())
+            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+            foreach (var sceneToAddToBuild in scenesToAddToBuild)
             {
-                List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-                foreach (var sceneToAddToBuild in scenesToAddToBuild)
-                {
-                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
-                }
-                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+                editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
             }
+
+            // Note, this completely replaces the list of scenes currently in the project with only our tests scenes.
+            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
         }
 
         public void ParseCommandLineArgs()

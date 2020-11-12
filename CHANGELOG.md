@@ -4,6 +4,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.3.7-preview] - 2020-11-11
+
+* Fix where vsync level was not being set for each Quality Setting
+* Enable "scripting-backend" or "scriptingbackend" for easier matching
+* Move IL2CPP as default scripting backend logic closer to method where it's set
+
 ## [0.3.6-preview] - 2020-11-05
 
 * Simplify adding test scenes to build settings

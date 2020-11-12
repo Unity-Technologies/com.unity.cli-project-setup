@@ -25,7 +25,7 @@ namespace com.unity.cliprojectsetup
     { 
 #if UNITY_EDITOR
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
-        public ScriptingImplementation ScriptingImplementation = ScriptingImplementation.IL2CPP;
+        public ScriptingImplementation? ScriptingImplementation;
         public ApiCompatibilityLevel? ApiCompatibilityLevel;
         public AndroidArchitecture AndroidTargetArchitecture = AndroidArchitecture.ARM64;
         public ManagedStrippingLevel ManagedStrippingLevel;

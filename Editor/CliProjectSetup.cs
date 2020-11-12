@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using NDesk.Options;
 /* TODO: Revisit burst logic when we're using it
@@ -101,7 +100,7 @@ namespace com.unity.cliprojectsetup
             {
                 platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
                 PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
-                    platformSettings.ScriptingImplementation);
+                    (ScriptingImplementation) platformSettings.ScriptingImplementation);
             }
 
             // If the user has specified mono scripting backend, but not specified AndroidArchitecture.ARMv7, or has incorrectly specified AndroidArchitecture.ARM64 (not supported
@@ -124,12 +123,24 @@ namespace com.unity.cliprojectsetup
             }
 
             // Default to no vsync for performance tests
-            QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
+
+            for (int i = 0; i < QualitySettings.names.Length; i++)
+            {
+                QualitySettings.SetQualityLevel(i);
+                QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
+            }
+           
+            //QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
             PlayerSettings.graphicsJobs = platformSettings.GraphicsJobs;
             PlayerSettings.MTRendering = platformSettings.MtRendering;
             PlayerSettings.colorSpace = platformSettings.ColorSpace;
-            PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
-                platformSettings.ScriptingImplementation);
+            if (platformSettings.ScriptingImplementation != null)
+            {
+                PlayerSettings.SetScriptingBackend(
+                    EditorUserBuildSettings.selectedBuildTargetGroup,
+                    (ScriptingImplementation)platformSettings.ScriptingImplementation);
+            }
+                
             if (platformSettings.ApiCompatibilityLevel != null)
             {
                 PlayerSettings.SetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup, (ApiCompatibilityLevel) platformSettings.ApiCompatibilityLevel);
@@ -164,7 +175,7 @@ namespace com.unity.cliprojectsetup
         private OptionSet DefineOptionSet()
         {
             var optionsSet = new OptionSet();
-            optionsSet.Add("scriptingbackend=",
+            optionsSet.Add("scripting-backend|scriptingbackend=",
                 "Scripting backend to use. IL2CPP is default. Values: IL2CPP, Mono", ParseScriptingBackend);
             optionsSet.Add("playergraphicsapi=", "Graphics API based on GraphicsDeviceType.",
                 graphicsDeviceType =>
@@ -300,11 +311,8 @@ namespace com.unity.cliprojectsetup
 
         private void ParseScriptingBackend(string scriptingBackend)
         {
-            var sb = scriptingBackend.ToLower();
-            if (sb.Equals("mono"))
-            {
-                platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
-            }
+            platformSettings.ScriptingImplementation =
+                scriptingBackend.ToLower().StartsWith("mono") ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP;
         }
     }
 }

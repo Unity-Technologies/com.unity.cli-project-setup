@@ -124,6 +124,7 @@ namespace com.unity.cliprojectsetup
             settings.AntiAliasing = QualitySettings.antiAliasing;
 #endif
 
+#if ENABLE_VR
 #if OCULUS_SDK
             // These fields are used by the performance test framework and are an artifact from this class
             // previously using the provider - specific enums before converting to a cross-platform friendly string
@@ -149,6 +150,7 @@ namespace com.unity.cliprojectsetup
                 var builtInXrStereoPath = (StereoRenderingPath)Enum.Parse(typeof(StereoRenderingPath), StereoRenderingMode);
                 settings.StereoRenderingMode = GetXrStereoRenderingPathMapping(builtInXrStereoPath).ToString();
             }
+#endif
 #endif
             CustomMetadataManager.SaveSettingsAssetInEditor();
         }

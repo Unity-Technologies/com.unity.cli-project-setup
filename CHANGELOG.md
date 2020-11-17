@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.3.8-preview] - 2020-11-16
+
+* Ensure VR setup is guarded using ENABLE_VR
+
 ## [0.3.7-preview] - 2020-11-11
 
 * Fix where vsync level was not being set for each Quality Setting

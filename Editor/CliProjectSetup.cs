@@ -11,6 +11,7 @@ using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
+using ConfigureProject;
 
 namespace com.unity.cliprojectsetup
 {
@@ -41,7 +42,10 @@ namespace com.unity.cliprojectsetup
             }
 
             // Note, this completely replaces the list of scenes currently in the project with only our tests scenes.
-            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            if (editorBuildSettingsScenes.Count != 0)
+            {
+                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            }
         }
 
         public void ParseCommandLineArgs()
@@ -80,7 +84,7 @@ namespace com.unity.cliprojectsetup
 
             if (!string.IsNullOrEmpty(platformSettings.XrTarget))
             {
-                //TODO Ejaz to implement
+                XRPlatformSettings<PlatformSettings>.Configure(platformSettings);
             }
         }
 

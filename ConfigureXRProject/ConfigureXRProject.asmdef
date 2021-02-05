@@ -1,0 +1,46 @@
+{
+    "name": "ConfigureXRProject",
+    "rootNamespace": "",
+    "references": [
+        "ConfigureProject",
+        "com.unity.cliprojectsetup",
+        "Unity.XR.Oculus",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor",
+        "Unity.XR.MockHMD",
+        "Unity.XR.OpenXR",
+        "Unity.XR.WindowsMixedReality"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.oculus",
+            "expression": "0.0.1",
+            "define": "XR_SDK;OCULUS_SDK"
+        },
+        {
+            "name": "com.unity.xr.mock-hmd",
+            "expression": "0.0.1",
+            "define": "XR_SDK;MOCKHMD_SDK"
+        },
+        {
+            "name": "com.unity.xr.openxr",
+            "expression": "0.0.1",
+            "define": "XR_SDK;OPENXR_SDK"
+        },
+        {
+            "name": "com.unity.xr.windowsmr",
+            "expression": "0.0.1",
+            "define": "XR_SDK;WMR_SDK"
+        }
+    ],
+    "noEngineReferences": false
+}

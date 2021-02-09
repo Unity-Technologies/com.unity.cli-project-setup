@@ -116,26 +116,4 @@ namespace ConfigureXRProject
         }
     }
 }
-#else
-    class LegacyVrPlatformSettings : XRPlatformSettings<PlatformSettings>
-    {
-        protected override void ConfigureXr(PlatformSettings platformSettings)
-        {
-            PlayerSettings.virtualRealitySupported = true;
-    
-            UnityEditorInternal.VR.VREditor.SetVREnabledDevicesOnTargetGroup
-                (platformSettings.BuildTargetGroup, new string[] { platformSettings.XrTarget });
-    
-            try
-            {
-                PlayerSettings.stereoRenderingPath = (StereoRenderingPath)Enum.Parse(
-                    typeof(StereoRenderingPath), platformSettings.StereoRenderingMode);
-            }
-            catch (System.Exception e)
-            {
-                throw new ArgumentException(
-                    "Error trying to cast stereo rendering mode cmdline parameter to UnityEditor.StereoRenderingPath type.", e);
-            }
-        }
-    }
 #endif // XR_SDK

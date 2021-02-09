@@ -11,6 +11,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.XR;
 
+namespace ConfigureXRProject
+{
     class LegacyVrPlatformSettings : XRPlatformSettings<PlatformSettings>
     {
         protected override void ConfigureXr(PlatformSettings platformSettings)
@@ -37,4 +39,5 @@ using UnityEngine.XR;
             }
         }
     }
+}
 #endif

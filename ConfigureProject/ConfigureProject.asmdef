@@ -1,13 +1,7 @@
 {
-    "name": "com.unity.cliprojectsetup",
+    "name": "ConfigureProject",
     "rootNamespace": "",
-    "references": [
-        "ConfigureProject",
-        "com.unity.test.metadata-manager",
-        "com.unity.xr.oculusperformanceutility",
-        "Unity.RenderPipelines.Universal.Runtime",
-        "Unity.Burst"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

@@ -5,9 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using com.unity.test.metadatamanager;
-#if OCULUS_SDK
-using Unity.XR.Oculus;
-#endif
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -24,6 +21,7 @@ namespace com.unity.cliprojectsetup
     public class PlatformSettings
     { 
 #if UNITY_EDITOR
+        public BuildTargetGroup BuildTargetGroup => EditorUserBuildSettings.selectedBuildTargetGroup;
         public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
         public ScriptingImplementation? ScriptingImplementation;
         public ApiCompatibilityLevel? ApiCompatibilityLevel;
@@ -111,7 +109,6 @@ namespace com.unity.cliprojectsetup
             settings.DeviceRuntimeVersion = DeviceRuntimeVersion;
             settings.FfrLevel = FfrLevel;
             settings.AndroidTargetArchitecture = AndroidTargetArchitecture.ToString();
-            settings.StereoRenderingMode = StereoRenderingMode;
 
             GetPackageUnderTestVersionInfo(settings);
             settings.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";

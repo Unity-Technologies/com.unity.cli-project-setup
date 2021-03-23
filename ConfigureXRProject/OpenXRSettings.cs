@@ -16,7 +16,7 @@ namespace ConfigureXRProject
 {
     class OpenXRPlatformSettings : XrSdkPlatformSettings<OpenXRSettings, OpenXRLoader>
     {
-        protected override string xrConfigName => "UnityEngine.XR.OpenXR.Settings";
+        protected override string xrConfigName => UnityEngine.XR.OpenXR.Constants.k_SettingsKey;
         protected override string CmdlineParam => "OpenXR";
     
         public override void SetRenderMode(PlatformSettings platformSettings, OpenXRSettings xrSettings)

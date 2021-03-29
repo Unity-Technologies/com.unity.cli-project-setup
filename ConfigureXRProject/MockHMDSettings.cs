@@ -17,14 +17,14 @@ namespace ConfigureXRProject
     class MockHMDSdkPlatformSettings : XrSdkPlatformSettings<MockHMDBuildSettings, MockHMDLoader>
     {
         protected override string xrConfigName => "Unity.XR.MockHMD.Settings";
-        protected override string CmdlineParam => "MockHMDXRSDK"
+        protected override string CmdlineParam => "MockHMDXRSDK";
     
-        public override void SetRenderMode(PlatformSettings platformSettings, WindowsMRSettings xrSettings)
+        public override void SetRenderMode(PlatformSettings platformSettings)
         {
             try
             {
-                mockSettings.renderMode = (MockHMDBuildSettings.RenderMode)Enum.Parse(
-                    typeof(MockHMDBuildSettings.RenderMode), platformSettings.StereoRenderingPath);
+                xrSettings.renderMode = (MockHMDBuildSettings.RenderMode)Enum.Parse(
+                    typeof(MockHMDBuildSettings.RenderMode), platformSettings.StereoRenderingMode);
             }
             catch (Exception e)
             {

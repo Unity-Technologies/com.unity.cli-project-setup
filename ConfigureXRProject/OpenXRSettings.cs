@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.XR.Management;
 #if OPENXR_SDK
 using UnityEngine.XR.OpenXR;
+using UnityEditor.XR.OpenXR.Features;
 
 namespace ConfigureXRProject
 {
@@ -18,18 +19,30 @@ namespace ConfigureXRProject
     {
         protected override string xrConfigName => UnityEngine.XR.OpenXR.Constants.k_SettingsKey;
         protected override string CmdlineParam => "OpenXR";
+
+        protected override void CreateXRSettingsInstance()
+        {
+            FeatureHelpers.RefreshFeatures(EditorUserBuildSettings.selectedBuildTargetGroup);
+            xrSettings = OpenXRSettings.ActiveBuildTargetInstance;
+        }
     
-        public override void SetRenderMode(PlatformSettings platformSettings, OpenXRSettings xrSettings)
+        public override void SetRenderMode(PlatformSettings platformSettings)
         {
             try
             {
-                openxrSettings.renderMode = (OpenXRSettings.RenderMode)Enum.Parse(
-                    typeof(OpenXRSettings.RenderMode), platformSettings.StereoRenderingPath);
+                xrSettings.renderMode = (OpenXRSettings.RenderMode)Enum.Parse(
+                    typeof(OpenXRSettings.RenderMode), platformSettings.StereoRenderingMode);
             }
             catch (Exception e)
             {
                 throw new ArgumentException("Failed to parse stereo rendering mode for OpenXR", e);
             }
+        }
+
+        public override void ApplySettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
+        {
+            EditorUtility.SetDirty(OpenXRSettings.ActiveBuildTargetInstance);
+            AssetDatabase.SaveAssets();
         }
     }    
 }

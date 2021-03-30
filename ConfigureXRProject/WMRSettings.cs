@@ -19,7 +19,7 @@ namespace ConfigureXRProject
         protected override string xrConfigName => "Unity.XR.WindowsMR.Settings";
         protected override string CmdlineParam => "WMRXRSDK";
     
-        public override void SetRenderMode(PlatformSettings platformSettings, WindowsMRSettings xrSettings)
+        public override void SetRenderMode(PlatformSettings platformSettings)
         {
             // No Implementation
         }

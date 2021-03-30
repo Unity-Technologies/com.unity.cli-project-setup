@@ -9,6 +9,7 @@
         "Unity.XR.Management.Editor",
         "Unity.XR.MockHMD",
         "Unity.XR.OpenXR",
+        "Unity.XR.OpenXR.Editor",
         "Unity.XR.WindowsMixedReality"
     ],
     "includePlatforms": [

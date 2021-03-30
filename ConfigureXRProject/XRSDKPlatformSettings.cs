@@ -19,12 +19,19 @@ namespace ConfigureXRProject
     {
         private static readonly string xrsdkTestXrSettingsPath = "Assets/XR/Settings/Test Settings.asset";
 
-        protected readonly T xrSettings = ScriptableObject.CreateInstance<T>();
+        protected T xrSettings;
         protected abstract string xrConfigName { get; }
         protected abstract string CmdlineParam { get; }
 
+        protected virtual void CreateXRSettingsInstance()
+        {
+            xrSettings = ScriptableObject.CreateInstance<T>();
+        }
+
         protected override void ConfigureXr(PlatformSettings platformSettings)
         {
+            CreateXRSettingsInstance();
+
             if (!string.Equals(CmdlineParam, platformSettings.XrTarget, StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -53,6 +60,11 @@ namespace ConfigureXRProject
 
             SetRenderMode(platformSettings);
 
+            ApplySettings(buildTargetSettings);
+        }
+
+        public virtual void ApplySettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
+        {
             AssetDatabase.AddObjectToAsset(xrSettings, xrsdkTestXrSettingsPath);
             AssetDatabase.SaveAssets();
             EditorBuildSettings.AddConfigObject(xrConfigName, xrSettings, true);

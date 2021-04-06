@@ -30,8 +30,6 @@ namespace ConfigureXRProject
 
         protected override void ConfigureXr(PlatformSettings platformSettings)
         {
-            CreateXRSettingsInstance();
-
             if (!string.Equals(CmdlineParam, platformSettings.XrTarget, StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -51,6 +49,8 @@ namespace ConfigureXRProject
             xrGeneralSettings.Manager = managerSettings;
 
             SetupLoader(xrGeneralSettings, buildTargetSettings, managerSettings);
+
+            CreateXRSettingsInstance();
 
             if (xrSettings == null)
             {

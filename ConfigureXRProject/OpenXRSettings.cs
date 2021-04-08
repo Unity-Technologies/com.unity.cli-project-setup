@@ -39,7 +39,7 @@ namespace ConfigureXRProject
             }
         }
 
-        public override void ApplySettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
+        public override void ApplyLoaderSettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
         {
             EditorUtility.SetDirty(OpenXRSettings.ActiveBuildTargetInstance);
             AssetDatabase.SaveAssets();

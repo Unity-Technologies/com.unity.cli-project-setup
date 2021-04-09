@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 * XR support OpenXR fixes
+* Added stereorenderingpath option as an alias to stereorenderingmode for backwards compatibility with the cli-config-manager package.
 
 ## [0.3.10-preview] - 2021-02-15
 * XR support

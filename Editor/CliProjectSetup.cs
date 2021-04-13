@@ -262,9 +262,7 @@ namespace com.unity.cliprojectsetup
                 "XR target to enable in player settings. Values: " +
                 "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"",
                 xrTarget => platformSettings.XrTarget = xrTarget);
-            optionsSet.Add("stereorenderingmode=", "Stereo rendering mode to enable. SinglePass is default. Defining both this option and stereorenderingpath results in undefined behavior.",
-                srm => platformSettings.StereoRenderingMode = srm);
-            optionsSet.Add("stereorenderingpath=", "Stereo rendering mode to enable. SinglePass is default. Alias of the stereorenderingmode option for backwards compatibility with the cli-config-manager package. Defining both options results in undefined behavior.",
+            optionsSet.Add("stereorenderingmode|stereorenderingpath=", "Stereo rendering mode to enable. SinglePass is default. Defining both this option and stereorenderingpath results in undefined behavior.",
                 srm => platformSettings.StereoRenderingMode = srm);
             optionsSet.Add("simulationmode=",
                 "Enable Simulation modes for Windows MR in Editor. Values: \r\n\"HoloLens\"\r\n\"WindowsMR\"\r\n\"Remoting\"",

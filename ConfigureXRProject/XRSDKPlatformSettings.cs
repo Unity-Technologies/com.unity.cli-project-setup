@@ -60,16 +60,17 @@ namespace ConfigureXRProject
 
             SetRenderMode(platformSettings);
 
-            ApplySettings(buildTargetSettings);
+            ApplyLoaderSettings(buildTargetSettings);
+
+            // Add xrSettings to Preloaded assets so XR Mgmt can see it.
+            EditorBuildSettings.AddConfigObject(XRGeneralSettings.k_SettingsKey, buildTargetSettings, true);
         }
 
-        public virtual void ApplySettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
+        public virtual void ApplyLoaderSettings(XRGeneralSettingsPerBuildTarget buildTargetSettings)
         {
             AssetDatabase.AddObjectToAsset(xrSettings, xrsdkTestXrSettingsPath);
             AssetDatabase.SaveAssets();
             EditorBuildSettings.AddConfigObject(xrConfigName, xrSettings, true);
-
-            EditorBuildSettings.AddConfigObject(XRGeneralSettings.k_SettingsKey, buildTargetSettings, true);
         }
 
         public abstract void SetRenderMode(PlatformSettings platformSettings);

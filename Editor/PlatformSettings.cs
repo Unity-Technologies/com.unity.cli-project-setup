@@ -51,7 +51,6 @@ namespace com.unity.cliprojectsetup
         public string TestProjectRevision;
         public string TestProjectRevisionDate;
         public string TestProjectBranch;
-        public string EnabledXrTarget;
         public string StereoRenderingMode;
         public string StereoRenderingModeDesktop;
         public string StereoRenderingModeAndroid;
@@ -100,7 +99,7 @@ namespace com.unity.cliprojectsetup
             settings.TestProjectRevision = TestProjectRevision;
             settings.TestProjectRevisionDate = TestProjectRevisionDate;
             settings.TestProjectBranch = TestProjectBranch;
-            settings.EnabledXrTarget = EnabledXrTarget;
+            settings.EnabledXrTarget = XrTarget;
             settings.StereoRenderingMode = StereoRenderingMode;
             settings.StereoRenderingModeDesktop = StereoRenderingModeDesktop;
             settings.StereoRenderingModeAndroid = StereoRenderingModeAndroid;

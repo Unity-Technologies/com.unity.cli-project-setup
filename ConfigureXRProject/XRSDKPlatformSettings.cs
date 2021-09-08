@@ -106,11 +106,19 @@ namespace ConfigureXRProject
         private static void EnsureXrGeneralSettingsPathExists(string testXrGeneralSettingsPath)
         {
             var settingsPath = Path.GetDirectoryName(testXrGeneralSettingsPath);
-            if (!Directory.Exists(settingsPath))
+            if (!AssetDatabase.IsValidFolder(settingsPath))
             {
-                Directory.CreateDirectory(testXrGeneralSettingsPath);
+                var folders = settingsPath.Split(Path.DirectorySeparatorChar);
+                for (int i=0; i < folders.Length; i++)
+                {
+                    if (!AssetDatabase.IsValidFolder(folders[i]))
+                    {
+                        var parentFolder = string.Join(Path.DirectorySeparatorChar, folders, 0, i);
+                        AssetDatabase.CreateFolder(parentFolder, folders[i]);
+                    }
+                }
             }
-        }
+        }        }
 
         private static void EnsureArgumentsNotNull(XRGeneralSettings xrGeneralSettings,
             XRGeneralSettingsPerBuildTarget buildTargetSettings, XRManagerSettings managerSettings)

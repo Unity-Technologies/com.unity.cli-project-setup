@@ -118,7 +118,7 @@ namespace ConfigureXRProject
                     }
                 }
             }
-        }        }
+        }
 
         private static void EnsureArgumentsNotNull(XRGeneralSettings xrGeneralSettings,
             XRGeneralSettingsPerBuildTarget buildTargetSettings, XRManagerSettings managerSettings)

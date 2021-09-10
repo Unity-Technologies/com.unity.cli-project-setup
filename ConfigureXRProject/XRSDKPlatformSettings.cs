@@ -106,9 +106,23 @@ namespace ConfigureXRProject
         private static void EnsureXrGeneralSettingsPathExists(string testXrGeneralSettingsPath)
         {
             var settingsPath = Path.GetDirectoryName(testXrGeneralSettingsPath);
-            if (!Directory.Exists(settingsPath))
+            if (!AssetDatabase.IsValidFolder(settingsPath))
             {
-                Directory.CreateDirectory(testXrGeneralSettingsPath);
+                // The parent folder must already exist before creating the folder
+                // Thus itereate through each folder in the hierarchy and create each individually
+                // Ref: https://docs.unity3d.com/2021.2/Documentation/ScriptReference/AssetDatabase.CreateFolder.html 
+                var folders = settingsPath.Split(Path.DirectorySeparatorChar);
+                for (int i=0; i < folders.Length; i++)
+                {
+                    if (!AssetDatabase.IsValidFolder(folders[i]))
+                    {
+                        var parentFolder = string.Join(Path.DirectorySeparatorChar, folders, 0, i);
+                        if ( string.IsNullOrEmpty(AssetDatabase.CreateFolder(parentFolder, folders[i])) )
+                        {
+                            throw new Exception(string.Format("Failed to create folder {0}/{1}", parentFolder, folders[i]));
+                        }
+                    }
+                }
             }
         }
 

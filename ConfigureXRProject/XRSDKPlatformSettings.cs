@@ -116,7 +116,7 @@ namespace ConfigureXRProject
                 {
                     if (!AssetDatabase.IsValidFolder(folders[i]))
                     {
-                        var parentFolder = string.Join(Path.DirectorySeparatorChar, folders, 0, i);
+                        var parentFolder = string.Join(Path.DirectorySeparatorChar.ToString(), folders, 0, i);
                         if ( string.IsNullOrEmpty(AssetDatabase.CreateFolder(parentFolder, folders[i])) )
                         {
                             throw new Exception(string.Format("Failed to create folder {0}/{1}", parentFolder, folders[i]));

@@ -28,9 +28,14 @@ namespace ConfigureXRProject
             xrSettings = ScriptableObject.CreateInstance<T>();
         }
 
+        protected virtual bool IsXrTarget(string xrTarget)
+        {
+            return xrTarget.Equals(CmdlineParam, StringComparison.OrdinalIgnoreCase);
+        }
+
         protected override void ConfigureXr(PlatformSettings platformSettings)
         {
-            if (!string.Equals(CmdlineParam, platformSettings.XrTarget, StringComparison.OrdinalIgnoreCase))
+            if (!IsXrTarget(platformSettings.XrTarget))
             {
                 return;
             }

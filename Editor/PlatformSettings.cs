@@ -2,13 +2,11 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using com.unity.test.metadatamanager;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
-using UnityEditor.PackageManager;
 #if URP
 using UnityEngine.Rendering.Universal;
 #endif
@@ -18,7 +16,7 @@ using UnityEngine.XR;
 
 namespace com.unity.cliprojectsetup
 {
-    public class PlatformSettings
+    public class PlatformSettings : IPlatformSettings
     { 
 #if UNITY_EDITOR
         public BuildTargetGroup BuildTargetGroup => EditorUserBuildSettings.selectedBuildTargetGroup;
@@ -28,6 +26,7 @@ namespace com.unity.cliprojectsetup
         public AndroidArchitecture AndroidTargetArchitecture = AndroidArchitecture.ARM64;
         public ManagedStrippingLevel ManagedStrippingLevel;
 #endif
+        private readonly string UnavailableMsg = "unavailable";
         public GraphicsDeviceType PlayerGraphicsApi;
         public string PackageUnderTestName;
         public string PackageUnderTestVersion;
@@ -65,9 +64,6 @@ namespace com.unity.cliprojectsetup
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        
-
 
         public void SerializeToAsset()
         {
@@ -151,17 +147,14 @@ namespace com.unity.cliprojectsetup
             CustomMetadataManager.SaveSettingsAssetInEditor();
         }
 
-        private void GetPackageUnderTestVersionInfo(CurrentSettings settings)
+        public void GetPackageUnderTestVersionInfo(CurrentSettings settings)
         {
-            var listRequest = Client.List(true);
-            while (!listRequest.IsCompleted)
-            {
-            }
+            var packageManagerClient = new PackageManagerClient();
 
-            if (listRequest.Result.Any(r => r.name.Equals(PackageUnderTestName)))
+            if (!string.IsNullOrEmpty(PackageUnderTestName) && packageManagerClient.PackageUnderTestPresentInProject(PackageUnderTestName))
             {
                 var packageUnderTestInfo =
-                    listRequest.Result.First(r => r.name.Equals(PackageUnderTestName));
+                    packageManagerClient.GetPackageInfo(PackageUnderTestName);
 
                 settings.PackageUnderTestVersion = packageUnderTestInfo.version;
 
@@ -169,55 +162,72 @@ namespace com.unity.cliprojectsetup
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to get
                 // the revision from the package.json.
-                settings.PackageUnderTestRevision = string.IsNullOrEmpty(PackageUnderTestRevision) ? 
-                    TryGetRevisionFromPackageJson(PackageUnderTestRevision) 
-                    : PackageUnderTestRevision;
+                settings.PackageUnderTestRevision = 
+                    !string.IsNullOrEmpty(PackageUnderTestRevision) ? PackageUnderTestRevision :
+                    !string.IsNullOrEmpty(TryGetRevisionFromPackageJson(PackageUnderTestName))  ? TryGetRevisionFromPackageJson(PackageUnderTestName) :
+                    UnavailableMsg;
 
                 // if PackageUnderTestRevisionDate is empty, then it wasn't passed in on the command line (which is
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to get
                 // the revision date from the package manager api instead.
-                settings.PackageUnderTestRevisionDate = string.IsNullOrEmpty(PackageUnderTestRevisionDate)
-                    ? TryGetPackageUnderTestRevisionDate(packageUnderTestInfo.datePublished)
-                    : PackageUnderTestRevisionDate;
+                settings.PackageUnderTestRevisionDate = 
+                    !string.IsNullOrEmpty(PackageUnderTestRevisionDate) ? PackageUnderTestRevisionDate :
+                    packageUnderTestInfo.datePublished != null ? GetPackageUnderTestRevisionDate(packageUnderTestInfo.datePublished) : 
+                    UnavailableMsg;
 
                 // if PackageUnderTestBranch is empty, then it wasn't passed in on the command line (which is
                 // usually going to be the case if we're running in tests at the PR level for the package).
                 // In this case, we most likely are using a released package reference, so let's try to infer
                 // the branch from the major.minor version of the package via the package manager API
-                settings.PackageUnderTestBranch = string.IsNullOrEmpty(PackageUnderTestBranch)
-                    ? TryGetPackageUnderTestBranch(packageUnderTestInfo.version)
-                    : PackageUnderTestBranch;
+                settings.PackageUnderTestBranch = 
+                    !string.IsNullOrEmpty(PackageUnderTestBranch) ? PackageUnderTestBranch :
+                    !string.IsNullOrEmpty(packageUnderTestInfo.version) ? GetPackageUnderTestBranch(packageUnderTestInfo.version) :
+                    UnavailableMsg;
+            }
+            else
+            {
+                settings.PackageUnderTestRevision = UnavailableMsg;
+                settings.PackageUnderTestVersion = UnavailableMsg;
+                settings.PackageUnderTestRevisionDate = UnavailableMsg;
+                settings.PackageUnderTestBranch = UnavailableMsg;
             }
         }
 
-        private string TryGetPackageUnderTestBranch(string version)
+        public string GetPackageUnderTestBranch(string version)
         {
             var matches = majorMinorVersionValueRegex.Matches(version);
             return matches.Count > 0 ? string.Concat(matches[0].Groups[0].Value, "x") : "release";
         }
 
-        private string TryGetPackageUnderTestRevisionDate(DateTime? datePublished)
+        public string GetPackageUnderTestRevisionDate(DateTime? datePublished)
         {
             return datePublished != null ?
-                    ((DateTime)datePublished).ToString("s", DateTimeFormatInfo.InvariantInfo) : "unavailable";
+                    ((DateTime)datePublished).ToString("s", DateTimeFormatInfo.InvariantInfo) : UnavailableMsg;
         }
 
-        private string TryGetRevisionFromPackageJson(string packageName)
+        public string TryGetRevisionFromPackageJson(string packageName)
         {
-            string revision = null;
-            var packageAsString = File.ReadAllText(string.Format("Packages/{0}/package.json", packageName));
-            var matches = revisionValueRegex.Matches(packageAsString);
-            if (matches.Count > 0)
+            var revision = string.Empty;
+            try
             {
-                revision = matches[0].Groups[1].Value;
+                var packageAsString = File.ReadAllText($"Packages/{packageName}/package.json");
+                var matches = revisionValueRegex.Matches(packageAsString);
+                if (matches.Count > 0)
+                {
+                    revision = matches[0].Groups[1].Value;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
             }
 
             return revision;
         }
 
 #if UNITY_EDITOR && ENABLE_VR
-        private XRSettings.StereoRenderingMode GetXrStereoRenderingPathMapping(StereoRenderingPath stereoRenderingPath)
+        public XRSettings.StereoRenderingMode GetXrStereoRenderingPathMapping(StereoRenderingPath stereoRenderingPath)
         {
             switch (stereoRenderingPath)
             {

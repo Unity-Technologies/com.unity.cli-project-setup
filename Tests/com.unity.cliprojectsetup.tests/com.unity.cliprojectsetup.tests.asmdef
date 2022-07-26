@@ -1,5 +1,5 @@
 {
-    "name": "com.unity.cliprojectsetup.editor.tests",
+    "name": "com.unity.cliprojectsetup.tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",

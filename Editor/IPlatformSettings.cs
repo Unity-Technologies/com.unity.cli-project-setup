@@ -1,7 +1,9 @@
 using System;
 using UnityEditor;
 using UnityEditor.PackageManager.Requests;
+#if ENABLE_VR
 using UnityEngine.XR;
+#endif
 
 namespace com.unity.cliprojectsetup
 {
@@ -14,6 +16,8 @@ namespace com.unity.cliprojectsetup
         string GetPackageUnderTestBranch(string version);
         string GetPackageUnderTestRevisionDate(DateTime? datePublished);
         string TryGetRevisionFromPackageJson(string packageName);
+#if ENABLE_VR
         XRSettings.StereoRenderingMode GetXrStereoRenderingPathMapping(StereoRenderingPath stereoRenderingPath);
+#endif
     }
 }

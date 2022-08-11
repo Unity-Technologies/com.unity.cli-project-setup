@@ -4,10 +4,13 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.3.17-preview] - 2022-02-10
+## [0.3.18-preview] - 2022-08-11
+* Ensure we're wrapping all references to VR with #IF ENABLE_VR
+
+## [0.3.17-preview] - 2022-07-26
 * Update min supported Unity version to 2020.3
 
-## [0.3.16-preview] - 2022-02-10
+## [0.3.16-preview] - 2022-07-26
 * Add empty string/null checks for package metadata to fix bug where no package metadata exists. Add unit tests for these.
 
 ## [0.3.15-preview] - 2022-02-10

@@ -4,6 +4,9 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.0-preview] - 2022-08-17
+* Update to use newest version of com.unity.test.metadata-manager
+
 ## [0.3.18-preview] - 2022-08-11
 * Ensure we're wrapping all references to VR with #IF ENABLE_VR
 

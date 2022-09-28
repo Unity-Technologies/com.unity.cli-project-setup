@@ -260,7 +260,7 @@ namespace com.unity.cliprojectsetup
                 AddSceneToBuildList);
             optionsSet.Add("enabledxrtarget|enabledxrtargets=",
                 "XR target to enable in player settings. Values: " +
-                "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"",
+                "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"\r\n\"PSVR2\"",
                 xrTarget => platformSettings.XrTarget = xrTarget);
             optionsSet.Add("stereorenderingmode|stereorenderingpath=", "Stereo rendering mode to enable. SinglePass is default.",
                 srm => platformSettings.StereoRenderingMode = srm);

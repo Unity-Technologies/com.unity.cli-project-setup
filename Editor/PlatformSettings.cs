@@ -12,6 +12,9 @@ using UnityEngine.Rendering.Universal;
 #endif
 #if ENABLE_VR
 using UnityEngine.XR;
+#if OCULUS_SDK_PERF
+using Unity.XR.Oculus;
+#endif // OCULUS_SDK_PERF
 #endif
 
 namespace com.unity.cliprojectsetup
@@ -130,8 +133,8 @@ namespace com.unity.cliprojectsetup
             }
             
 #if OCULUS_SDK_PERF
-            settings.PluginVersion = string.Format("OculusPluginVersion|{0}", OculusStats.PluginVersion);
-#endif
+            settings.PluginVersion = string.Format("OculusPluginVersion|{0}", Stats.PluginVersion);
+#endif // OCulus_SDK_PERF
 #endif
 #if XR_SDK
             settings.StereoRenderingMode = StereoRenderingMode;

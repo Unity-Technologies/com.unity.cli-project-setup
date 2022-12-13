@@ -2,9 +2,8 @@
     "name": "com.unity.cliprojectsetup",
     "rootNamespace": "",
     "references": [
-        "ConfigureProject",
         "com.unity.test.metadata-manager",
-        "com.unity.xr.oculusperformanceutility",
+        "Unity.XR.Oculus",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.Burst"
     ],

@@ -11,7 +11,6 @@ using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
-using ConfigureProject;
 
 namespace com.unity.cliprojectsetup
 {
@@ -84,7 +83,7 @@ namespace com.unity.cliprojectsetup
 
             if (!string.IsNullOrEmpty(platformSettings.XrTarget))
             {
-                XRPlatformSettings<PlatformSettings>.Configure(platformSettings);
+                ConfigManager<PlatformSettings>.Instance.Configure(platformSettings);
             }
         }
 

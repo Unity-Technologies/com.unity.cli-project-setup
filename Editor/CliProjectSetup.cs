@@ -257,6 +257,9 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("addscenetobuild=",
                 "Specify path to scene to add to the build, Path is relative to Assets folder.",
                 AddSceneToBuildList);
+                optionsSet.Add("openxrfeatures=",
+                "Add array of feature names to enable for openxr. ex [r:MockRuntime,OculusQuestFeature] should be name of feature class. Add r: before the feature name to make it required. Required features will fail the job if not found",
+                features => platformSettings.OpenXRFeatures = features);
             optionsSet.Add("enabledxrtarget|enabledxrtargets=",
                 "XR target to enable in player settings. Values: " +
                 "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"\r\n\"PSVR2\"",

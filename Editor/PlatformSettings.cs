@@ -59,6 +59,7 @@ namespace com.unity.cliprojectsetup
         public string SimulationMode;
         public string PluginVersion;
         public string XrTarget;
+        public string OpenXRFeatures;
         public string DeviceRuntimeVersion;
         public string FfrLevel;
         public string Vsync;
@@ -138,6 +139,7 @@ namespace com.unity.cliprojectsetup
 #endif
 #if XR_SDK
             settings.StereoRenderingMode = StereoRenderingMode;
+            settings.OpenXRFeatures = OpenXRFeatures;
 #else
             if (!string.IsNullOrEmpty(StereoRenderingMode))
             {

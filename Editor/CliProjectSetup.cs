@@ -17,7 +17,6 @@ namespace com.unity.cliprojectsetup
     public class CliProjectSetup
     {
         public List<string> ScenesToAddToBuild = new List<string>();
-
         public readonly List<string> ScriptDefines = new List<string>();
 
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
@@ -275,6 +274,7 @@ namespace com.unity.cliprojectsetup
             optionsSet.Add("ffrlevel=",
                 "ffr level we're running at",
                 ffrlevel => platformSettings.FfrLevel = string.Format("ffrlevel|{0}", ffrlevel));
+            optionsSet.Add("enablefoveatedrendering", "enable foveated rendering", foveatedrendering => platformSettings.FoveatedRendering = foveatedrendering != null);
             optionsSet.Add("androidtargetarchitecture=",
                 "Android Target Architecture to use.",
                 androidtargetarchitecture => platformSettings.AndroidTargetArchitecture = TryParse<AndroidArchitecture>(androidtargetarchitecture));

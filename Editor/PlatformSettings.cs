@@ -61,9 +61,9 @@ namespace com.unity.cliprojectsetup
         public string XrTarget;
         public string OpenXRFeatures;
         public string DeviceRuntimeVersion;
+        public bool FoveatedRendering;
         public string FfrLevel;
         public string Vsync;
-
         private readonly Regex revisionValueRegex = new Regex("\"revision\": \"([a-f0-9]*)\"",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
@@ -106,6 +106,7 @@ namespace com.unity.cliprojectsetup
             settings.SimulationMode = SimulationMode;
             settings.PluginVersion = PluginVersion;
             settings.DeviceRuntimeVersion = DeviceRuntimeVersion;
+            settings.FoveatedRendering = FoveatedRendering;
             settings.FfrLevel = FfrLevel;
             settings.AndroidTargetArchitecture = AndroidTargetArchitecture.ToString();
 

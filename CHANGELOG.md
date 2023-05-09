@@ -4,13 +4,16 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.0-preview] - 2023-05-08
+Revert breaking removal of XR setups; URP relies on these.
+
 ## [0.5.0-preview] - 2023-04-06
 * Add cmd line option for enabling foveated rendering setting
 
 ## [0.4.1-preview] - 2022-12-09
 * Remove XR specific API and create ConfigManager
 
-## [0.4.0-preview] - 2022-08-17s
+## [0.4.0-preview] - 2022-08-17
 * Update to use newest version of com.unity.test.metadata-manager
 
 ## [0.3.18-preview] - 2022-08-11
@@ -91,3 +94,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.1.0-preview] - 2019-06-18
 
 ### This is the first release of *Unity Package \com.unity.cli-config-manager*.
+

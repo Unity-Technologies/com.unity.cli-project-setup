@@ -11,6 +11,8 @@ using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
+using ConfigureProject;
+using UnityEditor.Build;
 
 namespace com.unity.cliprojectsetup
 {
@@ -82,13 +84,13 @@ namespace com.unity.cliprojectsetup
 
             if (!string.IsNullOrEmpty(platformSettings.XrTarget))
             {
-                ConfigManager<PlatformSettings>.Instance.Configure(platformSettings);
+                XRPlatformSettings<PlatformSettings>.Configure(platformSettings);
             }
         }
 
         private void ConfigureIosSettings()
         {
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, string.Format("com.unity3d.{0}", PlayerSettings.productName));
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, string.Format("com.unity3d.{0}", PlayerSettings.productName));
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;
             PlayerSettings.iOS.iOSManualProvisioningProfileType = ProvisioningProfileType.Development;
         }
@@ -101,8 +103,7 @@ namespace com.unity.cliprojectsetup
                 platformSettings.ScriptingImplementation != ScriptingImplementation.Mono2x)
             {
                 platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
-                PlayerSettings.SetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup,
-                    (ScriptingImplementation) platformSettings.ScriptingImplementation);
+                PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), (ScriptingImplementation) platformSettings.ScriptingImplementation);
             }
 
             // If the user has specified mono scripting backend, but not specified AndroidArchitecture.ARMv7, or has incorrectly specified AndroidArchitecture.ARM64 (not supported
@@ -131,25 +132,24 @@ namespace com.unity.cliprojectsetup
                 QualitySettings.SetQualityLevel(i);
                 QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
             }
-           
-            //QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
+            
             PlayerSettings.graphicsJobs = platformSettings.GraphicsJobs;
             PlayerSettings.MTRendering = platformSettings.MtRendering;
             PlayerSettings.colorSpace = platformSettings.ColorSpace;
             if (platformSettings.ScriptingImplementation != null)
             {
                 PlayerSettings.SetScriptingBackend(
-                    EditorUserBuildSettings.selectedBuildTargetGroup,
+                    NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
                     (ScriptingImplementation)platformSettings.ScriptingImplementation);
             }
                 
             if (platformSettings.ApiCompatibilityLevel != null)
             {
-                PlayerSettings.SetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup, (ApiCompatibilityLevel) platformSettings.ApiCompatibilityLevel);
+                PlayerSettings.SetApiCompatibilityLevel(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), (ApiCompatibilityLevel) platformSettings.ApiCompatibilityLevel);
             }
             
             PlayerSettings.stripEngineCode = platformSettings.StringEngineCode;
-            PlayerSettings.SetManagedStrippingLevel(EditorUserBuildSettings.selectedBuildTargetGroup, platformSettings.ManagedStrippingLevel);
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), platformSettings.ManagedStrippingLevel);
             EditorUserBuildSettings.allowDebugging = platformSettings.ScriptDebugging;
             /* TODO: Revisit burst logic when we're using it
             #if ENABLE_BURST_AOT

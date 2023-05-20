@@ -1,9 +1,8 @@
 editors:
   - version: trunk
+  - version: 2023.1
   - version: 2022.2
   - version: 2022.1
-  - version: 2021.3
-  - version: 2020.3
 platforms:
   - name: Windows64
     os: windows

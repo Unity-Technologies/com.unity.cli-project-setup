@@ -20,13 +20,13 @@ namespace com.unity.cliprojectsetup
     { 
 #if UNITY_EDITOR
         public BuildTargetGroup BuildTargetGroup => EditorUserBuildSettings.selectedBuildTargetGroup;
-        public BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
-        public ScriptingImplementation? ScriptingImplementation;
-        public ApiCompatibilityLevel? ApiCompatibilityLevel;
-        public AndroidArchitecture AndroidTargetArchitecture = AndroidArchitecture.ARM64;
+        public virtual BuildTarget BuildTarget => EditorUserBuildSettings.activeBuildTarget;
+        public virtual ScriptingImplementation? ScriptingImplementation { get; set; }
+        public virtual ApiCompatibilityLevel? ApiCompatibilityLevel { get; set; }
+        public virtual AndroidArchitecture AndroidTargetArchitecture { get; set; } = AndroidArchitecture.ARM64;
         public ManagedStrippingLevel ManagedStrippingLevel;
 #endif
-        private readonly string UnavailableMsg = "unavailable";
+        private readonly string unavailableMsg = "unavailable";
         public GraphicsDeviceType PlayerGraphicsApi;
         public string PackageUnderTestName;
         public string PackageUnderTestVersion;
@@ -44,18 +44,20 @@ namespace com.unity.cliprojectsetup
         public string Username;
         public string JobLink;
         public int JobWorkerCount = -1; // sentinel value indicating we don't want to set the JobWorkerCount
-        public bool StringEngineCode;
+        public bool StripEngineCode;
         public bool ScriptDebugging;
         public string TestProjectName;
         public string TestProjectRevision;
         public string TestProjectRevisionDate;
         public string TestProjectBranch;
-        public string StereoRenderingMode;
+
+        public virtual string StereoRenderingMode { get; set; }
+
         public string StereoRenderingModeDesktop;
         public string StereoRenderingModeAndroid;
         public string SimulationMode;
         public string PluginVersion;
-        public string XrTarget;
+        public virtual string XrTarget { get; set; }
         public string OpenXRFeatures;
         public string DeviceRuntimeVersion;
         public bool FoveatedRendering;
@@ -66,7 +68,7 @@ namespace com.unity.cliprojectsetup
         private readonly Regex majorMinorVersionValueRegex = new Regex("([0-9]*\\.[0-9]*\\.)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public void SerializeToAsset()
+        public virtual void SerializeToAsset()
         {
             var settings = CustomMetadataManager.Instance;
             var pathParts = Application.dataPath.Split('/');
@@ -75,7 +77,7 @@ namespace com.unity.cliprojectsetup
             settings.MtRendering = MtRendering;
             settings.GraphicsJobs = GraphicsJobs;
             settings.EnableBurst = EnableBurst;
-            settings.ScriptingBackend = ScriptingImplementation.ToString();
+            settings.ScriptingBackend = ScriptingImplementation?.ToString();
             settings.ColorSpace = ColorSpace.ToString();
             settings.Username = Username = Environment.UserName;
             settings.PackageUnderTestName = PackageUnderTestName;
@@ -89,7 +91,7 @@ namespace com.unity.cliprojectsetup
             settings.JobLink = JobLink;
             settings.JobWorkerCount = Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
             settings.ApiCompatibilityLevel = ApiCompatibilityLevel.ToString();
-            settings.StripEngineCode = StringEngineCode;
+            settings.StripEngineCode = StripEngineCode;
             settings.ManagedStrippingLevel = ManagedStrippingLevel.ToString();
             settings.ScriptDebugging = ScriptDebugging;
             settings.TestProjectName = TestProjectName;
@@ -168,7 +170,7 @@ namespace com.unity.cliprojectsetup
                 settings.PackageUnderTestRevision = 
                     !string.IsNullOrEmpty(PackageUnderTestRevision) ? PackageUnderTestRevision :
                     !string.IsNullOrEmpty(TryGetRevisionFromPackageJson(PackageUnderTestName))  ? TryGetRevisionFromPackageJson(PackageUnderTestName) :
-                    UnavailableMsg;
+                    unavailableMsg;
 
                 // if PackageUnderTestRevisionDate is empty, then it wasn't passed in on the command line (which is
                 // usually going to be the case if we're running in tests at the PR level for the package).
@@ -177,7 +179,7 @@ namespace com.unity.cliprojectsetup
                 settings.PackageUnderTestRevisionDate = 
                     !string.IsNullOrEmpty(PackageUnderTestRevisionDate) ? PackageUnderTestRevisionDate :
                     packageUnderTestInfo.datePublished != null ? GetPackageUnderTestRevisionDate(packageUnderTestInfo.datePublished) : 
-                    UnavailableMsg;
+                    unavailableMsg;
 
                 // if PackageUnderTestBranch is empty, then it wasn't passed in on the command line (which is
                 // usually going to be the case if we're running in tests at the PR level for the package).
@@ -186,14 +188,14 @@ namespace com.unity.cliprojectsetup
                 settings.PackageUnderTestBranch = 
                     !string.IsNullOrEmpty(PackageUnderTestBranch) ? PackageUnderTestBranch :
                     !string.IsNullOrEmpty(packageUnderTestInfo.version) ? GetPackageUnderTestBranch(packageUnderTestInfo.version) :
-                    UnavailableMsg;
+                    unavailableMsg;
             }
             else
             {
-                settings.PackageUnderTestRevision = UnavailableMsg;
-                settings.PackageUnderTestVersion = UnavailableMsg;
-                settings.PackageUnderTestRevisionDate = UnavailableMsg;
-                settings.PackageUnderTestBranch = UnavailableMsg;
+                settings.PackageUnderTestRevision = unavailableMsg;
+                settings.PackageUnderTestVersion = unavailableMsg;
+                settings.PackageUnderTestRevisionDate = unavailableMsg;
+                settings.PackageUnderTestBranch = unavailableMsg;
             }
         }
 
@@ -206,7 +208,7 @@ namespace com.unity.cliprojectsetup
         public string GetPackageUnderTestRevisionDate(DateTime? datePublished)
         {
             return datePublished != null ?
-                    ((DateTime)datePublished).ToString("s", DateTimeFormatInfo.InvariantInfo) : UnavailableMsg;
+                    ((DateTime)datePublished).ToString("s", DateTimeFormatInfo.InvariantInfo) : unavailableMsg;
         }
 
         public string TryGetRevisionFromPackageJson(string packageName)

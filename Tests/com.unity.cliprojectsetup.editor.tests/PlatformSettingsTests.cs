@@ -1,17 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using com.unity.cliprojectsetup;
 #if NUGET_MOQ_AVAILABLE
 using Moq;
 #endif
 using NUnit.Framework;
-using UnityEditor.PackageManager.Requests;
-using UnityEngine;
-using UnityEngine.TestTools;
 
-public class CliProjectSetupEditorTests
+public class PlaformSettingsTests
 {
-    private readonly string UnavailableMsg = "unavailable";
+    private readonly string unavailableMsg = "unavailable";
     private CurrentSettings currentSettings;
     private PlatformSettings platformSettings;
 
@@ -26,15 +21,14 @@ public class CliProjectSetupEditorTests
     public void VerifyGetPackageUnderTestVersionInfo_PackageUnderTestRevision_NotEmpty()
     {
         // Arrange
-        platformSettings.PackageUnderTestName = @"com.unity.test-framework";
+        platformSettings.PackageUnderTestName = @"com.unity.cli-project-setup";
 
         // Act
         platformSettings.GetPackageUnderTestVersionInfo(currentSettings);
 
         // Assert
-        Assert.AreNotEqual(UnavailableMsg, currentSettings.PackageUnderTestName, nameof(currentSettings.PackageUnderTestName));
-        Assert.AreNotEqual(UnavailableMsg, currentSettings.PackageUnderTestRevision, nameof(currentSettings.PackageUnderTestRevision));
-        Assert.AreNotEqual(UnavailableMsg, currentSettings.PackageUnderTestVersion, nameof(currentSettings.PackageUnderTestVersion));
+        Assert.AreNotEqual(unavailableMsg, currentSettings.PackageUnderTestName, nameof(currentSettings.PackageUnderTestName));
+        Assert.AreNotEqual(unavailableMsg, currentSettings.PackageUnderTestVersion, nameof(currentSettings.PackageUnderTestVersion));
     }
 
     [Test]
@@ -48,10 +42,10 @@ public class CliProjectSetupEditorTests
         platformSettings.GetPackageUnderTestVersionInfo(currentSettings);
 
         // Assert
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestRevision, nameof(currentSettings.PackageUnderTestRevision));
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestVersion, nameof(currentSettings.PackageUnderTestVersion));
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestRevisionDate, nameof(currentSettings.PackageUnderTestRevisionDate));
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestBranch, nameof(currentSettings.PackageUnderTestBranch));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestRevision, nameof(currentSettings.PackageUnderTestRevision));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestVersion, nameof(currentSettings.PackageUnderTestVersion));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestRevisionDate, nameof(currentSettings.PackageUnderTestRevisionDate));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestBranch, nameof(currentSettings.PackageUnderTestBranch));
     }
 
 #if NUGET_MOQ_AVAILABLE
@@ -62,7 +56,7 @@ public class CliProjectSetupEditorTests
         platformSettings.PackageUnderTestName = string.Empty;
         var testPackageName = "testPackage";
         platformSettings.PackageUnderTestName = testPackageName;
-        platformSettings.PackageUnderTestRevision = UnavailableMsg;
+        platformSettings.PackageUnderTestRevision = unavailableMsg;
 
         var mockPackageManagerClient = new Mock<IPackageManagerClient>();
         mockPackageManagerClient.Setup(pmc => pmc.PackageUnderTestPresentInProject(testPackageName)).Returns(true);
@@ -72,7 +66,7 @@ public class CliProjectSetupEditorTests
         platformSettings.GetPackageUnderTestVersionInfo(currentSettings);
 
         // Assert
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestRevision, nameof(currentSettings.PackageUnderTestRevision));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestRevision, nameof(currentSettings.PackageUnderTestRevision));
     }
 
     [Test]
@@ -82,7 +76,7 @@ public class CliProjectSetupEditorTests
         platformSettings.PackageUnderTestRevisionDate = string.Empty;
         var testPackageName = "testPackage";
         platformSettings.PackageUnderTestName = testPackageName;
-        platformSettings.PackageUnderTestRevision = UnavailableMsg;
+        platformSettings.PackageUnderTestRevision = unavailableMsg;
 
         var mockPackageManagerClient = new Mock<IPackageManagerClient>();
         mockPackageManagerClient.Setup(pmc => pmc.PackageUnderTestPresentInProject(testPackageName)).Returns(true);
@@ -92,7 +86,7 @@ public class CliProjectSetupEditorTests
         platformSettings.GetPackageUnderTestVersionInfo(currentSettings);
 
         // Assert
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestRevisionDate, nameof(currentSettings.PackageUnderTestRevisionDate));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestRevisionDate, nameof(currentSettings.PackageUnderTestRevisionDate));
     }
 
     [Test]
@@ -102,7 +96,7 @@ public class CliProjectSetupEditorTests
         platformSettings.PackageUnderTestBranch = string.Empty;
         var testPackageName = "testPackage";
         platformSettings.PackageUnderTestName = testPackageName;
-        platformSettings.PackageUnderTestRevision = UnavailableMsg;
+        platformSettings.PackageUnderTestRevision = unavailableMsg;
 
         var mockPackageManagerClient = new Mock<IPackageManagerClient>();
         mockPackageManagerClient.Setup(pmc => pmc.PackageUnderTestPresentInProject(testPackageName)).Returns(true);
@@ -112,7 +106,7 @@ public class CliProjectSetupEditorTests
         platformSettings.GetPackageUnderTestVersionInfo(currentSettings);
 
         // Assert
-        Assert.AreEqual(UnavailableMsg, currentSettings.PackageUnderTestBranch, nameof(currentSettings.PackageUnderTestBranch));
+        Assert.AreEqual(unavailableMsg, currentSettings.PackageUnderTestBranch, nameof(currentSettings.PackageUnderTestBranch));
     }
 #endif
 }

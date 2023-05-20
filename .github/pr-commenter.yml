@@ -1,0 +1,15 @@
+comment:
+  on-update: edit
+  snippets:
+    - id: URP
+      files:
+        - **/*
+      body: |
+        ### **Regression Tests to Run for CLI Project Setup**
+
+        You should always run the following job when you change code in this package. When you create a new run, use the CLI_PROJECT_SETUP_VERSION variable input field to enter a github url path to your dev branch changeset like this: `com.unity.cli-project-setup@"ssh://git@github.cds.internal.unity3d.com/unity/com.unity.cli-project-setup.git#e04468fd4be965e4da3635d4ce0cf90e866bd326"`
+
+        This will enable you to run the tests with your dev branch to gain more confidence that a regression hasn't been introduced.
+        - [URP PR](https://unity-ci.cds.internal.unity3d.com/project/3/branch/{{branchName}}/jobDefinition/.yamato%2Fsrp%2Furp.yml%23urp_pr) from the unity/unity repository
+        - [Pack and test all packages](https://unity-ci.cds.internal.unity3d.com/project/1166/branch/{{branchName}}/jobDefinition/.yamato%2Fupm-ci.yml%23all_package_ci) for this repository
+        

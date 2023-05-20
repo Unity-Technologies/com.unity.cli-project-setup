@@ -1,5 +1,5 @@
 {
-    "name": "com.unity.cliprojectsetup.tests",
+    "name": "com.unity.cliprojectsetup.editor.tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
@@ -21,12 +21,12 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-	"versionDefines": [
-		{
-		  "name": "nuget.moq",
-		  "expression": "1.0.0",
-		  "define": "NUGET_MOQ_AVAILABLE"
-		}
-	],
+    "versionDefines": [
+        {
+            "name": "nuget.moq",
+            "expression": "1.0.0",
+            "define": "NUGET_MOQ_AVAILABLE"
+        }
+    ],
     "noEngineReferences": false
 }

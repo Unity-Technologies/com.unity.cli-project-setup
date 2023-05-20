@@ -3,11 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NDesk.Options;
-/* TODO: Revisit burst logic when we're using it
-#if ENABLE_BURST_AOT
-using Unity.Burst;
-#endif
-*/
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -18,111 +13,167 @@ namespace com.unity.cliprojectsetup
 {
     public class CliProjectSetup
     {
-        public List<string> ScenesToAddToBuild = new List<string>();
-        public readonly List<string> ScriptDefines = new List<string>();
+        private readonly string[] commandLineArgs;
+        public readonly List<string> ScenesToAddToBuild = new List<string>();
 
         private readonly Regex customArgRegex = new Regex("-([^=]*)=", RegexOptions.Compiled);
-        private readonly PlatformSettings platformSettings = new PlatformSettings();
+        public PlatformSettings PlatformSettings = new PlatformSettings();
+
+        private List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+        public string[] CliArgs;
+        
+        public CliProjectSetup(string[] args = null, PlatformSettings platformSettings = null)
+        {
+            if (args != null)
+            {
+                commandLineArgs = args;
+            }
+
+            if (platformSettings != null)
+            {
+                PlatformSettings = platformSettings;
+            }
+        }
 
         public void ConfigureFromCmdlineArgs()
         {
             ParseCommandLineArgs();
             ConfigureSettings();
-            AddTestScenesToBuild(ScenesToAddToBuild);
-            platformSettings.SerializeToAsset();
+            AddTestScenesToBuild();
+            PlatformSettings.SerializeToAsset();
         }
 
-        public static void AddTestScenesToBuild(List<string> scenesToAddToBuild)
+        public virtual void AddTestScenesToBuild()
         {
 
-            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-            foreach (var sceneToAddToBuild in scenesToAddToBuild)
+            foreach (var sceneToAddToBuild in ScenesToAddToBuild)
             {
                 editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneToAddToBuild, true));
             }
 
-            // Note, this completely replaces the list of scenes currently in the project with only our tests scenes.
+            // Note, this completely replaces the list of buildSettingScenes currently in the project with only our tests buildSettingScenes.
             if (editorBuildSettingsScenes.Count != 0)
             {
-                EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+                SetEditorBuildSettingsScenes(editorBuildSettingsScenes.ToArray());
             }
         }
 
-        public void ParseCommandLineArgs()
+        protected virtual void SetEditorBuildSettingsScenes(EditorBuildSettingsScene[] buildSettingScenes)
         {
-            var args = Environment.GetCommandLineArgs();
-            EnsureOptionsLowerCased(args);
-            var optionSet = DefineOptionSet();
-            var unParsedArgs = optionSet.Parse(args);
+            EditorBuildSettings.scenes = buildSettingScenes;
         }
 
-        private void EnsureOptionsLowerCased(string[] args)
+        public virtual void ParseCommandLineArgs()
         {
-            for (var i = 0; i < args.Length; i++)
+            CliArgs = commandLineArgs ?? Environment.GetCommandLineArgs();
+            EnsureOptionsLowerCased();
+            var optionSet = DefineOptionSet();
+            var unParsedArgs = optionSet.Parse(CliArgs);
+        }
+
+        public void EnsureOptionsLowerCased()
+        {
+            for (var i = 0; i < CliArgs.Length; i++)
             {
-                if (customArgRegex.IsMatch(args[i]))
+                if (customArgRegex.IsMatch(CliArgs[i]))
                 {
-                    args[i] = customArgRegex.Replace(args[i], customArgRegex.Matches(args[i])[0].ToString().ToLower());
+                    CliArgs[i] = customArgRegex.Replace(CliArgs[i], customArgRegex.Matches(CliArgs[i])[0].ToString().ToLower());
                 }
             }
         }
 
-        private void ConfigureSettings()
+        public virtual void ConfigureSettings()
         {
             ConfigureCrossplatformSettings();
             // If Android, setup Android player settings
-            if (platformSettings.BuildTarget == BuildTarget.Android)
+            if (PlatformSettings.BuildTarget == BuildTarget.Android)
             {
                 ConfigureAndroidSettings();
             }
 
             // If iOS, setup iOS player settings
-            if (platformSettings.BuildTarget == BuildTarget.iOS)
+            if (PlatformSettings.BuildTarget == BuildTarget.iOS)
             {
                 ConfigureIosSettings();
             }
 
-            if (!string.IsNullOrEmpty(platformSettings.XrTarget))
+            if (!string.IsNullOrEmpty(PlatformSettings.XrTarget))
             {
-                XRPlatformSettings<PlatformSettings>.Configure(platformSettings);
+                ConfigureXrSettings();
             }
         }
 
-        private void ConfigureIosSettings()
+        public virtual void ConfigureXrSettings()
+        {
+#if XR_SDK
+            XRPlatformSettings<PlatformSettings>.Configure(PlatformSettings);
+#endif
+        }
+
+        public virtual void ConfigureIosSettings()
         {
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, string.Format("com.unity3d.{0}", PlayerSettings.productName));
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;
             PlayerSettings.iOS.iOSManualProvisioningProfileType = ProvisioningProfileType.Development;
         }
 
-        private void ConfigureAndroidSettings()
+        public virtual void ConfigureAndroidSettings()
         {
-            // If the user has specified AndroidArchitecture.ARMv7, but not specified ScriptingImplementation.Mono2x, or has incorrectly specified ScriptingImplementation.IL2CPP (not supported
-            // with mono), then set to AndroidArchitecture.ARMv7 so we're in a compatible configuration state.
-            if (platformSettings.AndroidTargetArchitecture == AndroidArchitecture.ARMv7 &&
-                platformSettings.ScriptingImplementation != ScriptingImplementation.Mono2x)
+
+            // AndroidTargetArchitecture has a default value of ARM64 and ScriptingImplementation is nullable. Further ARMv7 is only compatible with Mono2x.
+            // Given baseline assumption and constraints, we want to help the user avoid issues as much as we can here
+
+            // If AndroidTargetArchitecture is ARMv7, it's because the user passed it in on the CLI (ARM64 is the default in PlatformSettings). Further,
+            // if ScriptingImplementation is IL2CPP, it's also because the user passed it in on the CLI, but these are incompatible, but most likely the
+            // user didn't know that, so let's help them out but setting ScriptingImplementation to Mono2x.
+            if (PlatformSettings.AndroidTargetArchitecture == AndroidArchitecture.ARMv7 &&
+                PlatformSettings.ScriptingImplementation != ScriptingImplementation.Mono2x)
             {
-                platformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
-                PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), (ScriptingImplementation) platformSettings.ScriptingImplementation);
+                SetScriptingImplementationToMono2x();
+                SetPlayerSettingsAndroidScriptingBackend();
             }
 
-            // If the user has specified mono scripting backend, but not specified AndroidArchitecture.ARMv7, or has incorrectly specified AndroidArchitecture.ARM64 (not supported
-            // with mono), then set to AndroidArchitecture.ARMv7 so we're in a compatible configuration state.
-            if (platformSettings.ScriptingImplementation == ScriptingImplementation.Mono2x &&
-                platformSettings.AndroidTargetArchitecture != AndroidArchitecture.ARMv7)
+            // If ScriptingImplementation is Mono, it's because the user passed it in on the CLI. Further,
+            // if AndroidArchitecture is NOT ARMv7, it's most likely because they didn't specify an AndroidArchitecture and it took it's default value of ARM64,
+            // but these are incompatible, so let's help them out but setting AndroidArchitecture to ARMv7.
+            if (PlatformSettings.ScriptingImplementation == ScriptingImplementation.Mono2x &&
+                PlatformSettings.AndroidTargetArchitecture != AndroidArchitecture.ARMv7)
             {
-                platformSettings.AndroidTargetArchitecture = AndroidArchitecture.ARMv7;
+                SetAndroidTargetArchitectureToARMv7();
             }
-            PlayerSettings.Android.targetArchitectures = platformSettings.AndroidTargetArchitecture;
+
+            SetPlayerSettingsAndroidTargetArchitectures();
         }
 
-        private void ConfigureCrossplatformSettings()
+        public virtual void SetAndroidTargetArchitectureToARMv7()
         {
-            if (platformSettings.PlayerGraphicsApi != GraphicsDeviceType.Null)
+            PlatformSettings.AndroidTargetArchitecture = AndroidArchitecture.ARMv7;
+        }
+
+        public virtual void SetScriptingImplementationToMono2x()
+        {
+            PlatformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
+        }
+
+        public virtual void SetPlayerSettingsAndroidScriptingBackend()
+        {
+            PlayerSettings.SetScriptingBackend(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
+                (ScriptingImplementation)PlatformSettings.ScriptingImplementation);
+        }
+
+        public virtual void SetPlayerSettingsAndroidTargetArchitectures()
+        {
+            PlayerSettings.Android.targetArchitectures = PlatformSettings.AndroidTargetArchitecture;
+        }
+
+        public virtual void ConfigureCrossplatformSettings()
+        {
+            if (PlatformSettings.PlayerGraphicsApi != GraphicsDeviceType.Null)
             {
-                PlayerSettings.SetUseDefaultGraphicsAPIs(platformSettings.BuildTarget, false);
-                PlayerSettings.SetGraphicsAPIs(platformSettings.BuildTarget,
-                    new[] {platformSettings.PlayerGraphicsApi});
+                PlayerSettings.SetUseDefaultGraphicsAPIs(PlatformSettings.BuildTarget, false);
+                PlayerSettings.SetGraphicsAPIs(PlatformSettings.BuildTarget,
+                    new[] {PlatformSettings.PlayerGraphicsApi});
             }
 
             // Default to no vsync for performance tests
@@ -130,159 +181,165 @@ namespace com.unity.cliprojectsetup
             for (int i = 0; i < QualitySettings.names.Length; i++)
             {
                 QualitySettings.SetQualityLevel(i);
-                QualitySettings.vSyncCount = !string.IsNullOrEmpty(platformSettings.Vsync) ? Convert.ToInt32(platformSettings.Vsync) : 0;
+                QualitySettings.vSyncCount = !string.IsNullOrEmpty(PlatformSettings.Vsync) ? Convert.ToInt32(PlatformSettings.Vsync) : 0;
             }
             
-            PlayerSettings.graphicsJobs = platformSettings.GraphicsJobs;
-            PlayerSettings.MTRendering = platformSettings.MtRendering;
-            PlayerSettings.colorSpace = platformSettings.ColorSpace;
-            if (platformSettings.ScriptingImplementation != null)
-            {
-                PlayerSettings.SetScriptingBackend(
-                    NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
-                    (ScriptingImplementation)platformSettings.ScriptingImplementation);
-            }
-                
-            if (platformSettings.ApiCompatibilityLevel != null)
-            {
-                PlayerSettings.SetApiCompatibilityLevel(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), (ApiCompatibilityLevel) platformSettings.ApiCompatibilityLevel);
-            }
-            
-            PlayerSettings.stripEngineCode = platformSettings.StringEngineCode;
-            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), platformSettings.ManagedStrippingLevel);
-            EditorUserBuildSettings.allowDebugging = platformSettings.ScriptDebugging;
-            /* TODO: Revisit burst logic when we're using it
-            #if ENABLE_BURST_AOT
-                        BurstCompiler.Options.EnableBurstCompilation = platformSettings.EnableBurst;
-            #endif
-            */
-            if (platformSettings.JobWorkerCount >= 0)
-            {
-                try
-                {
-                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = platformSettings.JobWorkerCount;
-                }
-                catch (Exception e)
-                {
-                    // If we try to set the JobWorkerCount to more than the number of cores - 1 for a given machine,
-                    // an exception is thrown. In this case, catch the exception and just use the default JobWorkerCount,
-                    // then save this as the value used in our platformSettings.
-                    Debug.Log($"Exception caught while trying to set JobWorkerCount to {platformSettings.JobWorkerCount}. Exception: {e.Message}");
-                    platformSettings.JobWorkerCount = Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
-                }
+            PlayerSettings.graphicsJobs = PlatformSettings.GraphicsJobs;
+            PlayerSettings.MTRendering = PlatformSettings.MtRendering;
+            PlayerSettings.colorSpace = PlatformSettings.ColorSpace;
+            TrySetScriptingBackend();
+            TrySetApiCompatabilityLevel();
+            PlayerSettings.stripEngineCode = PlatformSettings.StripEngineCode;
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), PlatformSettings.ManagedStrippingLevel);
+            EditorUserBuildSettings.allowDebugging = PlatformSettings.ScriptDebugging;
 
+            if (PlatformSettings.JobWorkerCount >= 0)
+            {
+                SetJobWorkerCount();
             }
+        }
+
+        public virtual void SetJobWorkerCount()
+        {
+            Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount = PlatformSettings.JobWorkerCount;
+        }
+
+        public virtual void TrySetApiCompatabilityLevel()
+        {
+            if (PlatformSettings.ApiCompatibilityLevel != null)
+            {
+                SetApiCompatabilityLevel();
+            }
+        }
+
+        public virtual void SetApiCompatabilityLevel()
+        {
+            PlayerSettings.SetApiCompatibilityLevel(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
+                (ApiCompatibilityLevel)PlatformSettings.ApiCompatibilityLevel);
+        }
+
+        public virtual void TrySetScriptingBackend()
+        {
+            if (PlatformSettings.ScriptingImplementation != null)
+            {
+                SetScriptingBackend();
+            }
+        }
+
+        public virtual void SetScriptingBackend()
+        {
+            PlayerSettings.SetScriptingBackend(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
+                (ScriptingImplementation)PlatformSettings.ScriptingImplementation);
         }
 
         private OptionSet DefineOptionSet()
         {
             var optionsSet = new OptionSet();
             optionsSet.Add("scripting-backend|scriptingbackend=",
-                "Scripting backend to use. IL2CPP is default. Values: IL2CPP, Mono", ParseScriptingBackend);
+                "Scripting backend to use. Values: IL2CPP, Mono", ParseScriptingBackend);
             optionsSet.Add("playergraphicsapi=", "Graphics API based on GraphicsDeviceType.",
                 graphicsDeviceType =>
-                    platformSettings.PlayerGraphicsApi = TryParse<GraphicsDeviceType>(graphicsDeviceType));
+                    PlatformSettings.PlayerGraphicsApi = ParseEnum<GraphicsDeviceType>(graphicsDeviceType));
             optionsSet.Add("colorspace=", "Linear or Gamma color space.",
-                colorSpace => platformSettings.ColorSpace = TryParse<ColorSpace>(colorSpace));
+                colorSpace => PlatformSettings.ColorSpace = ParseEnum<ColorSpace>(colorSpace));
             optionsSet.Add("mtRendering",
                 "Enable or disable multithreaded rendering. Enabled is default. Use option to enable, or use option and append '-' to disable.",
-                option => platformSettings.MtRendering = option != null);
+                option => PlatformSettings.MtRendering = option != null);
             optionsSet.Add("graphicsJobs",
                 "Enable graphics jobs rendering. Disabled is default. Use option to enable, or use option and append '-' to disable.",
-                option => platformSettings.GraphicsJobs = option != null);
+                option => PlatformSettings.GraphicsJobs = option != null);
             optionsSet.Add("testsrev=",
                 "revision id of the tests being used.",
-                testsrev => platformSettings.TestsRevision = testsrev);
+                testsrev => PlatformSettings.TestsRevision = testsrev);
             optionsSet.Add("testsrevdate=",
                 "revision date of the tests being used.",
-                revDate => platformSettings.TestsRevisionDate = revDate);
+                revDate => PlatformSettings.TestsRevisionDate = revDate);
             optionsSet.Add("testsbranch=",
                 "branch of the tests repo being used.",
-                testsbranch => platformSettings.TestsBranch = testsbranch);
+                testsbranch => PlatformSettings.TestsBranch = testsbranch);
             optionsSet.Add("enableburst",
                 "Enable burst. Enabled is default. Use option to disable: -enableburst",
-                option => platformSettings.EnableBurst = option != null);
+                option => PlatformSettings.EnableBurst = option != null);
             optionsSet.Add("packageundertestname=",
                 "package under test commit revision id",
-                packageundertestname => platformSettings.PackageUnderTestName = packageundertestname);
+                packageundertestname => PlatformSettings.PackageUnderTestName = packageundertestname);
             optionsSet.Add("packageundertestversion=",
                 "package under test version",
-                packageundertestrev => platformSettings.PackageUnderTestVersion = packageundertestrev);
+                packageundertestrev => PlatformSettings.PackageUnderTestVersion = packageundertestrev);
             optionsSet.Add("packageundertestrev=",
                 "package under test commit revision id",
-                packageundertestrev => platformSettings.PackageUnderTestRevision = packageundertestrev);
+                packageundertestrev => PlatformSettings.PackageUnderTestRevision = packageundertestrev);
             optionsSet.Add("packageundertestrevdate=",
                 "package under test commit revision date",
-                packageundertestrevdate => platformSettings.PackageUnderTestRevisionDate = packageundertestrevdate);
+                packageundertestrevdate => PlatformSettings.PackageUnderTestRevisionDate = packageundertestrevdate);
             optionsSet.Add("packageundertestbranch=",
                 "branch of the package under test repo being used.",
-                packageundertestbranch => platformSettings.PackageUnderTestBranch = packageundertestbranch);
+                packageundertestbranch => PlatformSettings.PackageUnderTestBranch = packageundertestbranch);
             optionsSet.Add("testprojectname=",
                 "test project commit revision id",
-                testprojectname => platformSettings.TestProjectName = testprojectname);
+                testprojectname => PlatformSettings.TestProjectName = testprojectname);
             optionsSet.Add("testprojectrevision=",
                 "test project commit revision id",
-                testprojectrevision => platformSettings.TestProjectRevision = testprojectrevision);
+                testprojectrevision => PlatformSettings.TestProjectRevision = testprojectrevision);
             optionsSet.Add("testprojectrevdate=",
                 "test project commit revision date",
-                testprojectrevdate => platformSettings.TestProjectRevisionDate = testprojectrevdate);
+                testprojectrevdate => PlatformSettings.TestProjectRevisionDate = testprojectrevdate);
             optionsSet.Add("testprojectbranch=",
                 "branch of the test project repo being used.",
-                testprojectbranch => platformSettings.TestProjectBranch = testprojectbranch);
+                testprojectbranch => PlatformSettings.TestProjectBranch = testprojectbranch);
             optionsSet.Add("joblink=",
                 "Hyperlink to test job.",
-                joblink => platformSettings.JobLink = joblink);
+                joblink => PlatformSettings.JobLink = joblink);
             optionsSet.Add("jobworkercount=",
                 "Number of job workers to use. Range is 0 - number of cores minus 1.",
                 jobworkercount =>
                 {
-                    if (jobworkercount != null)
+                    if (int.TryParse(jobworkercount, out var count))
                     {
-                        platformSettings.JobWorkerCount = Convert.ToInt32(jobworkercount);
+                        PlatformSettings.JobWorkerCount = count;
                     }
                 });
             optionsSet.Add("apicompatibilitylevel=", "API compatibility to use. Default is NET_2_0",
-                apicompatibilitylevel => platformSettings.ApiCompatibilityLevel =
-                    TryParse<ApiCompatibilityLevel>(apicompatibilitylevel));
+                apicompatibilitylevel => PlatformSettings.ApiCompatibilityLevel =
+                    ParseEnum<ApiCompatibilityLevel>(apicompatibilitylevel));
             optionsSet.Add("stripenginecode",
                 "Enable Engine code stripping. Disabled is default. Use option to enable, or use option and append '-' to disable.",
-                option => platformSettings.StringEngineCode = option != null);
-            optionsSet.Add("managedstrippinglevel=", "Managed stripping level to use. Default is low",
-                managedstrippinglevel => platformSettings.ManagedStrippingLevel =
-                    TryParse<ManagedStrippingLevel>(managedstrippinglevel));
+                option => PlatformSettings.StripEngineCode = option != null);
+            optionsSet.Add("managedstrippinglevel=", "Managed stripping level to use. Default is Disabled",
+                managedstrippinglevel => PlatformSettings.ManagedStrippingLevel =
+                    ParseEnum<ManagedStrippingLevel>(managedstrippinglevel));
             optionsSet.Add("scriptdebugging",
                 "Enable scriptdebugging. Disabled is default. Use option to enable, or use option and append '-' to disable.",
-                scriptdebugging => platformSettings.ScriptDebugging = scriptdebugging != null);
+                scriptdebugging => PlatformSettings.ScriptDebugging = scriptdebugging != null);
             optionsSet.Add("addscenetobuild=",
                 "Specify path to scene to add to the build, Path is relative to Assets folder.",
                 AddSceneToBuildList);
                 optionsSet.Add("openxrfeatures=",
                 "Add array of feature names to enable for openxr. ex [r:MockRuntime,OculusQuestFeature] should be name of feature class. Add r: before the feature name to make it required. Required features will fail the job if not found",
-                features => platformSettings.OpenXRFeatures = features);
+                features => PlatformSettings.OpenXRFeatures = features);
             optionsSet.Add("enabledxrtarget|enabledxrtargets=",
                 "XR target to enable in player settings. Values: " +
                 "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"\r\n\"PSVR2\"",
-                xrTarget => platformSettings.XrTarget = xrTarget);
+                xrTarget => PlatformSettings.XrTarget = xrTarget);
             optionsSet.Add("stereorenderingmode|stereorenderingpath=", "Stereo rendering mode to enable. SinglePass is default.",
-                srm => platformSettings.StereoRenderingMode = srm);
+                srm => PlatformSettings.StereoRenderingMode = srm);
             optionsSet.Add("simulationmode=",
                 "Enable Simulation modes for Windows MR in Editor. Values: \r\n\"HoloLens\"\r\n\"WindowsMR\"\r\n\"Remoting\"",
-                simMode => platformSettings.SimulationMode = simMode);
+                simMode => PlatformSettings.SimulationMode = simMode);
             optionsSet.Add("deviceruntimeversion=",
                 "runtime version of the device we're running on.",
-                deviceruntime => platformSettings.DeviceRuntimeVersion = string.Format("deviceruntimeversion|{0}", deviceruntime));
+                deviceruntime => PlatformSettings.DeviceRuntimeVersion = string.Format("deviceruntimeversion|{0}", deviceruntime));
             optionsSet.Add("ffrlevel=",
                 "ffr level we're running at",
-                ffrlevel => platformSettings.FfrLevel = string.Format("ffrlevel|{0}", ffrlevel));
-            optionsSet.Add("enablefoveatedrendering", "enable foveated rendering", foveatedrendering => platformSettings.FoveatedRendering = foveatedrendering != null);
+                ffrlevel => PlatformSettings.FfrLevel = string.Format("ffrlevel|{0}", ffrlevel));
+            optionsSet.Add("enablefoveatedrendering", "enable foveated rendering", foveatedrendering => PlatformSettings.FoveatedRendering = foveatedrendering != null);
             optionsSet.Add("androidtargetarchitecture=",
                 "Android Target Architecture to use.",
-                androidtargetarchitecture => platformSettings.AndroidTargetArchitecture = TryParse<AndroidArchitecture>(androidtargetarchitecture));
-            optionsSet.Add("scriptdefine=",
-                "String to add to the player setting script defines.",
-                scriptDefine => ScriptDefines.AddRange(scriptDefine.Split(';')));
+                androidtargetarchitecture => PlatformSettings.AndroidTargetArchitecture = ParseEnum<AndroidArchitecture>(androidtargetarchitecture));
             optionsSet.Add("vsync=",
-                "test project commit revision id", vsync => platformSettings.Vsync = vsync);
+                "test project commit revision id", vsync => PlatformSettings.Vsync = vsync);
             return optionsSet;
         }
 
@@ -300,7 +357,7 @@ namespace com.unity.cliprojectsetup
             }
         }
 
-        public static T TryParse<T>(string stringToParse)
+        public static T ParseEnum<T>(string stringToParse)
         {
             T thisType;
             try
@@ -317,8 +374,10 @@ namespace com.unity.cliprojectsetup
 
         private void ParseScriptingBackend(string scriptingBackend)
         {
-            platformSettings.ScriptingImplementation =
-                scriptingBackend.ToLower().StartsWith("mono") ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP;
+            if (scriptingBackend.ToLower().StartsWith("mono"))
+                PlatformSettings.ScriptingImplementation = ScriptingImplementation.Mono2x;
+            else
+                PlatformSettings.ScriptingImplementation = ScriptingImplementation.IL2CPP;
         }
     }
 }

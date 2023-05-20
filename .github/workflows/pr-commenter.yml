@@ -1,7 +1,7 @@
 # When a graphics (SRP packages) PR is opened, this workflow lists the recommeded builders
 # to run on Yamato. It provides a link to the corresponding ant-graphics-ci branch.
 
-name: "Graphics PR Commenter"
+name: "CLI Project Setup PR Commenter"
 on:
   pull_request:
     paths:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/pr-commenter-action@v1.3.0
         with:
           github-token: "${{ github.token }}"
-          config-file: ".github/graphics-pr-commenter.yml"
+          config-file: ".github/pr-commenter.yml"
           template-variables: |
             {
               "branchName": "${{ steps.urlifiedBranchName.outputs.short_ref }}"

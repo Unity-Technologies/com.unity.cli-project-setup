@@ -60,15 +60,18 @@ If you've setup up everything correctly, you should now see the tests from the E
 
 ## Testing changes
 This package is used broadly across Graphics and XR testing. Following is a procedure for verifying changes and keeping broader support in mind.
-- Verify your own use cases.
-- Verify that the "Pack and test all packages" yamato job passes for your branch.
+- Ensure that you've followed the Developer Guide above and are able to run the com.unity.cli-project-setup editor tests with your changes in a Unity project. 
+
+- Verify your own use cases for the changes you've made and add additional tests, or refactor existing ones if appropriate. All tests should pass before going to the next step.
+
+- Run the [URP PR](https://unity-ci.cds.internal.unity3d.com/project/3/branch/trunk/jobDefinition/.yamato%2Fsrp%2Furp.yml%23urp_pr) job from the unity/unity repository. When you create a new run, use the CLI_PROJECT_SETUP_VERSION variable input field to enter a github url path to your dev branch changeset like this, where `e04468fd4be965e4da3635d4ce0cf90e866bd326` is the git revision of your dev branch changes. This will enable you to run the tests with your dev branch to gain more confidence that a regression hasn't been introduced.
+
+```
+    com.unity.cli-project-setup@"ssh://git@github.cds.internal.unity3d.com/unity/com.unity.cli-project-setup.git#e04468fd4be965e4da3635d4ce0cf90e866bd326" 
+```
+
+- Run the [Pack and test all packages](https://unity-ci.cds.internal.unity3d.com/project/1166/branch/{{branchName}}/jobDefinition/.yamato%2Fupm-ci.yml%23all_package_ci) job for this repository on your branch. This will run the unit tests across several platforms and Unity version to catch potential regression.
+
 - Verify that any other checks for this repo have passed on your PR.
-- Update the changelog and package.json to indicate a new version. To start, also postfix "-preview.1" to your candidate version.  Run the "Publish CliProjectSetup" yamato job.
-- Create branches for the packages [unity.graphictests.performance.universal](https://github.cds.internal.unity3d.com/unity/unity.graphictests.performance.universal) and [com.unity.testing.graphics-performance](https://github.cds.internal.unity3d.com/unity/com.unity.testing.graphics-performance).  Change the package.json for each package to indicate dependency on your candidate version of this package.
-- In the Graphics repo, make a new branch and edit [lines 36 and 37 of this file](https://github.com/Unity-Technologies/Graphics/blob/master/.yamato/config/universal_perf_boatattack.metafile) to point to the branches in the previous step (eg add #your-branch-name to the end of the git url).
-- Clone the [Graphics repository](https://github.com/Unity-Technologies/Graphics)
-- Clone the [gfx-sdet-tools](https://github.cds.internal.unity3d.com/unity/gfx-sdet-tools) repository and [run the yml generator script](https://github.cds.internal.unity3d.com/unity/gfx-sdet-tools/tree/master/yml-generator#running-the-script) targeting the Graphics repo (or ask a graphics SDET for help).
-- Run the "VikingVillage_URP PR Job - trunk" yamato job on my Graphics repo branch. Verify all tests pass
-- If all tests pass, remove the ".1" or "preview.1" postfix to match the previously released version's convention. Run the "Publish CliProjectSetup" yamato job.
-- Merge your PR
-- Create PRs for the packages [unity.graphictests.performance.universal](https://github.cds.internal.unity3d.com/unity/unity.graphictests.performance.universal) and [com.unity.testing.graphics-performance](https://github.cds.internal.unity3d.com/unity/com.unity.testing.graphics-performance). Change the package.json for each package to indicate dependency on your newly published version of this package.
+
+- Update the changelog with a summary of your changes and increment the version appropropriately here as well as in the package.json indicating a new version.

@@ -24,7 +24,7 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
         "com.unity.test.metadata-manager": "file:D:/com.unity.test.metadata-manager"
         ```
 
-        2. Add a scoped registry section to your project manifest: The com.unity.test.metadata-manager is published to the internal, upm-candidates package registry. If your project needs to use the production (non-internal) Unity package registry, you'll need to add a scopedRegistry section to your project manifest in order to access it  
+        2. If you are using the production/public Unity package repository, you'll need to add a scoped registry section to your project manifest as the com.unity.test.metadata-manager is published to the internal, upm-candidates package registry only. Here is an example of how to do this.  
 
         ```
         "scopedRegistries": [
@@ -37,7 +37,7 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
           }
         ],
         ```
-        3. Update the project manifest to use the internal package registry exlusively: If using the internal, upm-candidates, registry is acceptable for your project, just ensure you have this entry in the project manifest.  
+        3. If you don't need to use the production/public Unity package repository, you can choose to use the internal package registry exclusively. Below is the manifest entry that will make this happen.  
         
         ```
         "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates"

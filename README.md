@@ -50,11 +50,11 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
         ```
         
     4. Add `com.unity.cli-project-setup` to the project manifest's "testables" section. This will ensure the unit tests can be seen and run from the editor's test runner tab  
-```
-"testables": [
-    "com.unity.cli-project-setup"
-  ]
-```
+        ```
+        "testables": [
+            "com.unity.cli-project-setup"
+          ]
+        ```
 
 If you've setup up everything correctly, you should now see the tests from the EditMode tab of the Unity editor test runner tab.
 

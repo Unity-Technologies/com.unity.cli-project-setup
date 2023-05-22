@@ -8,7 +8,7 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
 
 1. Clone this git repository to your local machine  
 
-2. Choose a test project to include the com.unity.cli-project-setup package in while developing and debugging it.
+2. Choose a test project to include the com.unity.cli-project-setup package in while developing and debugging it, then make the following updates to the project's manifest:
 
     1. Add the package to the dependencies section of the project manifest, using a local reference syntax like this but using the location that is specific to your machine  
 
@@ -43,13 +43,13 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
         "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates"
         ```  
 
-        4. Add the MOQ mocking framework package to your project manifest.
+    3. Add the MOQ mocking framework package to your project manifest.
 
         ```
         "nuget.moq": "2.0.0-pre.2"
         ```
         
-3. Add com.unity.cli-project-setup to the project manifest's "testables" section. This will ensure the unit tests can be seen and run from the editor's test runner tab  
+    4. Add `com.unity.cli-project-setup` to the project manifest's "testables" section. This will ensure the unit tests can be seen and run from the editor's test runner tab  
 ```
 "testables": [
     "com.unity.cli-project-setup"

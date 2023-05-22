@@ -4,11 +4,11 @@ Provides a command line parser and options to set editor, build, player, and oth
 
 ## Developer Guide  
 
-In order to contribute to the com.unity.cli-project-setup package, do the following
+In order to contribute to the `com.unity.cli-project-setup` package, do the following
 
 1. Clone this git repository to your local machine  
 
-2. Choose a test project to include the com.unity.cli-project-setup package in while developing and debugging it, then make the following updates to the project's manifest:
+2. Choose a test project to include the `com.unity.cli-project-setup` package in while developing and debugging it, then make the following updates to the project's manifest:
 
     1. Add the package to the dependencies section of the project manifest, using a local reference syntax like this but using the location that is specific to your machine  
 
@@ -16,32 +16,32 @@ In order to contribute to the com.unity.cli-project-setup package, do the follow
         "com.unity.cli-project-setup": "file:D:/com.unity.cli-project-setup"
         ```
 
-    2. The com.unity.cli-project-setup package requires the com.unity.test.metadata-manager package as a dependency, so you'll need to include this in one of three ways:  
+    2. The `com.unity.cli-project-setup` package requires the `com.unity.test.metadata-manager` package as a dependency, so you'll need to include this in one of three ways:  
 
-        1. Add a local reference: Clone the com.unity.test.metadata-manager locally like you did for this package in the first step, and add a local dependency reference to it.  
+        1. Add a local reference: Clone the `com.unity.test.metadata-manager` locally like you did for this package in the first step, and add a local dependency reference to it.  
                 
-        ```
-        "com.unity.test.metadata-manager": "file:D:/com.unity.test.metadata-manager"
-        ```
+            ```
+            "com.unity.test.metadata-manager": "file:D:/com.unity.test.metadata-manager"
+            ```
 
-        2. If you are using the production/public Unity package repository, you'll need to add a scoped registry section to your project manifest as the com.unity.test.metadata-manager is published to the internal, upm-candidates package registry only. Here is an example of how to do this.  
+        2. If you are using the production/public Unity package repository, you'll need to add a scoped registry section to your project manifest as the `com.unity.test.metadata-manager` is published to the internal, upm-candidates package registry only. Here is an example of how to do this.  
 
-        ```
-        "scopedRegistries": [
-          {
-            "name": "Internal Candidate Registry",
-            "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates",
-            "scopes": [
-              "com.unity.test.metadata-manager"
-             ]
-          }
-        ],
-        ```
+            ```
+            "scopedRegistries": [
+              {
+                "name": "Internal Candidate Registry",
+                "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates",
+                "scopes": [
+                  "com.unity.test.metadata-manager"
+                 ]
+              }
+            ],
+            ```
         3. If you don't need to use the production/public Unity package repository, you can choose to use the internal package registry exclusively. Below is the manifest entry that will make this happen.  
         
-        ```
-        "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates"
-        ```  
+            ```
+            "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates"
+            ```  
 
     3. Add the MOQ mocking framework package to your project manifest.
 

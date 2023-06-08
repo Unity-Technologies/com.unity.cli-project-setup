@@ -690,6 +690,20 @@ public class CliProjectSetupOptions
     }
 
     [Test]
+    public void VerifyOption_RunDeviceAlias()
+    {
+        // Arrange
+        var args = new[] { $"-rundevicealias=Quest" };
+        var cliProjectSetup = new CliProjectSetup(args);
+
+        // Act
+        cliProjectSetup.ParseCommandLineArgs();
+
+        // Assert
+        Assert.AreEqual("Quest", cliProjectSetup.PlatformSettings.RunDeviceAlias);
+    }
+
+    [Test]
     public void VerifyOption_XrTarget()
     {
         // Arrange

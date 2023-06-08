@@ -319,6 +319,9 @@ namespace com.unity.cliprojectsetup
                 optionsSet.Add("openxrfeatures=",
                 "Add array of feature names to enable for openxr. ex [r:MockRuntime,OculusQuestFeature] should be name of feature class. Add r: before the feature name to make it required. Required features will fail the job if not found",
                 features => PlatformSettings.OpenXRFeatures = features);
+            optionsSet.Add("rundevicealias=",
+                "Specify an alias to use for the device you are running on. This can be used to have a consistent name for dealing with artifacts or devices which are nda and dont yet have a public name",
+                alias => PlatformSettings.RunDeviceAlias = alias);    
             optionsSet.Add("enabledxrtarget|enabledxrtargets=",
                 "XR target to enable in player settings. Values: " +
                 "\r\n\"Oculus\"\r\n\"OpenVR\"\r\n\"cardboard\"\r\n\"daydream\"\r\n\"MockHMD\"\r\n\"OculusXRSDK\"\r\n\"MockHMDXRSDK\"\r\n\"MagicLeapXRSDK\"\r\n\"WindowsMRXRSDK\"\r\n\"PSVR2\"",

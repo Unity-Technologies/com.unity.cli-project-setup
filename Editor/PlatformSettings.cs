@@ -59,6 +59,7 @@ namespace com.unity.cliprojectsetup
         public string PluginVersion;
         public virtual string XrTarget { get; set; }
         public string OpenXRFeatures;
+        public string RunDeviceAlias;
         public string DeviceRuntimeVersion;
         public bool FoveatedRendering;
         public string FfrLevel;
@@ -108,6 +109,7 @@ namespace com.unity.cliprojectsetup
             settings.FoveatedRendering = FoveatedRendering;
             settings.FfrLevel = FfrLevel;
             settings.AndroidTargetArchitecture = AndroidTargetArchitecture.ToString();
+            settings.RunDeviceAlias = RunDeviceAlias;
 
             GetPackageUnderTestVersionInfo(settings);
             settings.RenderPipeline = RenderPipeline =  $"{(GraphicsSettings.renderPipelineAsset != null ? GraphicsSettings.renderPipelineAsset.name : "BuiltInRenderer")}";

@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.0-preview] - 2023-06-19
+Added cmd line option RunDeviceAlias for setting a custom device name 
+Bumped com.unity.test.metadata-manager dependency to 0.4.0-preview
+
 ## [1.2.0-preview] - 2023-05-19
 Adding unit test coverage and updated developer documentation
 

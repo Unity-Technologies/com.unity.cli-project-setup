@@ -8,6 +8,7 @@ The code used for the setup options in the package originally predate many of th
 - [Player and Build Settings Setup Options](#player-and-build-settings-setup-options)
 - [Performance Test Metadata Options](#performance-test-metadata-options)
 - [Examples using the Unity CLI Project Setup options](#examples-using-the-unity-cli-project-setup-options)
+- [Developer Guide](#developer-guide)
 
 ## User Guide 
 

@@ -13,8 +13,24 @@ The code used for the setup options in the package originally (2017) predate man
 
 The CLI Project Setup package is designed to be used this way.
 
-1. Add the CLI options you need for your specific project configuration to your invokation of either Unity or UTR.
-2. Add the Unity command line option `-executemethod Editor.Setup` to this invokation as well. This will ensure that the `Setup()` method in the package's `Editor` class is executed when the test project is opened, ensuring the CLI options you specified in step one are correctly applied
+1. Create a static Editor method in your project that can be passed to the editor from the CLI using the `-executemethod` option. In this static Editor method, create a CliProjectSetup object, then call the ParseCommandLineArgs and ConfigureFromCmdlineArgs like the example below.
+```
+using com.unity.cliprojectsetup;
+
+public class Editor
+{
+    // Call this method using Unity's -executeMethod CLI command in the build jobs to parse setup args
+    public static void Setup()
+    {
+        var cliProjectSetup = new CliProjectSetup();
+        cliProjectSetup.ParseCommandLineArgs();
+        cliProjectSetup.ConfigureFromCmdlineArgs();
+    }
+}
+```
+
+2. Add the Unity command line option `-executemethod Editor.Setup` to this invokation as well. This will ensure that the `Setup()` method in the package's `Editor` class is executed when the test project is opened, ensuring the CLI options you specified in step one are correctly applied.
+3. Add the CLI options you need for your specific project configuration to your invokation of either Unity or UTR.
 
 ### Examples using the Unity CLI Project Setup options
 
@@ -48,7 +64,7 @@ while these options are interpreted by the Unity editor
 As noted earlier though, the `executemethod` option above runs a static Editor method from the CLI Project setup package that applies the settings.
 
 ### Player and Build Settings Setup Options
-These options are used to adjust player and build settings before building a player for test. They are set in an Editor method that implements the IPrebuildSetup interface.
+These options are used to adjust player and build settings before building a player for test. They are set in an Editor method discussed in the beginning of this [User Guide](#user-guide) near the end of the project opening phase.
 
 | Option Name   | Description
 |---------------|------------|
@@ -64,8 +80,8 @@ These options are used to adjust player and build settings before building a pla
 |`-scriptdebugging`|Enable scriptdebugging. Disabled is default.|
 |`-addscenetobuild=`|Specify path to scene to add to the build, Path is relative to Assets folder. Use this option for each scene you want to add to the build.|
 |`-openxrfeatures=`|Add array of feature names to enable for openxr. ex `[r:MockRuntime,OculusQuestFeature]` should be name of feature class. Add r: before the feature name to make it required. Required features will fail the job if not found|
-|`-enabledxrtarget=`</br>`-enabledxrtargets=`|XR target to enable in player settings. Values: </br><ul><li>OpenVR</li><li>MockHMD</li><li>OculusXRSDK</li><li> MockHMDXRSDK</li><li>MagicLeapXRSDK</li><li>WindowsMRXRSDK</li><li>PSVR2</li></ul>|
-|`-stereorenderingmode=`</br>`-stereorenderingpath=`|When using an XR provider, the stereo rendering mode to enable. SinglePass is default. Values:</br><ul><li>None</li><li>MultiPass</li><li>SinglePass</li><li>Instancing</li></ul>|
+|`-enabledxrtarget=`</br>`-enabledxrtargets=`|XR target to enable in player settings. Values: </br><ul><li>OpenXR</li><li>MockHMDXRSDK</li><li>OculusXRSDK</li><li>MagicLeapXRSDK</li><li>WMRXRSDK</li><li>PSVR2</li></ul>|
+|`-stereorenderingmode=`</br>`-stereorenderingpath=`|When using an XR provider, the stereo rendering mode to enable. SinglePass is default. Values:</br><ul><li>None</li><li>MultiPass</li><li>SinglePass</li><li>Instancing</li><li>Multiview</li></ul>|
 |`-simulationmode`|Enable Simulation modes for Windows MR in Editor.|
 |`-enablefoveatedrendering`|Enable foveated rendering. Disabled is default.|
 |`-androidtargetarchitecture=`|Android Target Architecture to use. ARM64 is the default value. Values: </br><ul><li>None</li><li>ARMv7</li><li>ARM64</li><li>X86</li><li>X86_64</li><li>All</li></ul> |
@@ -153,7 +169,9 @@ This package is used broadly across Graphics and XR testing. Following is a proc
 
 - Verify your own use cases for the changes you've made and add additional tests, or refactor existing ones if appropriate. All tests should pass before going to the next step.
 
-- Run the [URP PR](https://unity-ci.cds.internal.unity3d.com/project/3/branch/trunk/jobDefinition/.yamato%2Fsrp%2Furp.yml%23urp_pr) job from the unity/unity repository. When you create a new run, use the CLI_PROJECT_SETUP_VERSION variable input field to enter a github url path to your dev branch changeset like this, where `e04468fd4be965e4da3635d4ce0cf90e866bd326` is the git revision of your dev branch changes. This will enable you to run the tests with your dev branch to gain more confidence that a regression hasn't been introduced.
+- Run the [URP PR](https://unity-ci.cds.internal.unity3d.com/project/3/branch/trunk/jobDefinition/.yamato%2Fsrp%2Furp.yml%23urp_pr) job from the unity/unity repository. When you create a new run, use the CLI_PROJECT_SETUP_VERSION variable input field to enter a GitHub url path to your dev branch changeset like this, where `e04468fd4be965e4da3635d4ce0cf90e866bd326` is the git revision of your dev branch changes. This will enable you to run the tests with your dev branch to gain more confidence that a regression hasn't been introduced.
+
+Example of a GitHub URL path to your dev branch below:
 
 ```
     com.unity.cli-project-setup@"ssh://git@github.cds.internal.unity3d.com/unity/com.unity.cli-project-setup.git#e04468fd4be965e4da3635d4ce0cf90e866bd326" 

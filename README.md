@@ -2,6 +2,95 @@
 
 Provides a command line parser and options to set editor, build, player, and other Unity settings when running Unity from the command line.
 
+The code used for the setup options in the package originally (2017) predate many of the corresponding CLI options that UTR now has. A few teams at the time needed an easy way to reuse test project under various configuration settings, so this package was created to help with this. In practice some of these same command line switches exist for UTR, but they are preserved here for backward compatibility.
+
+## Section Links
+- [Player and Build Settings Setup Options](#player-and-build-settings-setup-options)
+- [Performance Test Metadata Options](#performance-test-metadata-options)
+- [Examples using the Unity CLI Project Setup options](#examples-using-the-unity-cli-project-setup-options)
+
+## User Guide 
+
+The CLI Project Setup package is designed to be used this way.
+
+1. Add the CLI options you need for your specific project configuration to your invokation of either Unity or UTR.
+2. Add the Unity command line option `-executemethod Editor.Setup` to this invokation as well. This will ensure that the `Setup()` method in the package's `Editor` class is executed when the test project is opened, ensuring the CLI options you specified in step one are correctly applied
+
+### Examples using the Unity CLI Project Setup options
+
+**Using the CLI Project Setup options from a direct invokation of Unity**
+```
+Unity.exe --architecture=arm64  -colorspace=Linear -enabledxrtargets=OculusXRSDK -executemethod Editor.Setup -playergraphicsapi=OpenGLES3 -stereoRenderingMode=Multiview --platform=Android --scripting-backend=IL2CPP -projectPath D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation
+```
+In the example above, the following options are interpreted by the CLI Project Setup package
+
+`-colorspace=Linear -enabledxrtargets=OculusXRSDK -playergraphicsapi=OpenGLES3 -stereoRenderingMode=Multiview`
+
+while these options are interpreted by the Unity editor
+
+`-executemethod Editor.Setup -playergraphicsapi=OpenGLES3 --platform=Android --scripting-backend=IL2CPP -projectPath D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation`
+
+As noted earlier though, the `executemethod` option above runs a static Editor method from the CLI Project setup package that applies the settings.
+
+
+**Using the CLI Project Setup options from an invokation of UTR, the build stage of a split-build-and-run**
+```
+utr --architecture=arm64 --artifacts_path=test-results --build-only --editor-location=.Editor --extra-editor-arg="-enabledxrtargets=OculusXRSDK" --extra-editor-arg="-executemethod" --extra-editor-arg="Editor.Setup" --extra-editor-arg="-playergraphicsapi=OpenGLES3" --extra-editor-arg="-colorspace=Linear"  --extra-editor-arg="-stereoRenderingMode=Multiview" --platform=Android --player-save-path=players --scripting-backend=IL2CPP --suite=playmode  --testproject=D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation 
+```
+In the example above, the following options are interpreted by the CLI Project Setup package
+
+`--extra-editor-arg="-enabledxrtargets=OculusXRSDK" --extra-editor-arg="-playergraphicsapi=OpenGLES3" --extra-editor-arg="-colorspace=Linear"  --extra-editor-arg="-stereoRenderingMode=Multiview"`
+
+while these options are interpreted by the Unity editor
+
+`--architecture=arm64 --artifacts_path=test-results --build-only --editor-location=.Editor --extra-editor-arg="-executemethod" --extra-editor-arg="Editor.Setup" --platform=Android --player-save-path=players --scripting-backend=IL2CPP --suite=playmode  --testproject=D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation `
+
+As noted earlier though, the `executemethod` option above runs a static Editor method from the CLI Project setup package that applies the settings.
+
+### Player and Build Settings Setup Options
+These options are used to adjust player and build settings before building a player for test. They are set in an Editor method that implements the IPrebuildSetup interface.
+
+| Option Name   | Description
+|---------------|------------|
+|`-scripting-backend=`</br>`-scriptingbackend=`|Scripting backend to use. Values: IL2CPP, Mono|
+|`-playergraphicsapi=`|Graphics API based on GraphicsDeviceType. Values: <br><ul><li>GameCoreScarlett</li><li>OpenGL2</li><li>Direct3D9</li><li>Direct3D11</li><li>PlayStation3</li><li>Null</li><li>Xbox360</li><li>OpenGLES2</li><li>OpenGLES3</li><li>PlayStationVita</li><li>PlayStation4</li><li>XboxOne</li><li>PlayStationMobile</li><li>Metal</li><li>OpenGLCore</li><li>Direct3D12</li><li>N3DS</li><li>Vulkan</li><li>Switch</li><li>XboxOneD3D12</li><li>GameCoreXboxOne</li><li>GameCoreXboxSeries</li><li>PlayStation5</li><li>PlayStation5NGGC</li><li>WebGPU</li></ul>|
+|`-colorspace=`|Colorspace to use. Values: Linear, Gamma|
+|`-mtRendering-`|Disable multithreaded rendering. Enabled is default.|
+|`-graphicsJobs`|Enable graphics jobs rendering. Disabled is default.|
+|`-jobworkercount=`|Number of job workers to use. Default is 0 which utilizes all cores. Value range [0 , NumberOfCpuCores - 1]|
+|`-apicompatibilitylevel=`|API compatibility to use. Default is NET_2_0. Values:</br><ul><li>NET_2_0</li><li>NET_2_0_Subset</li><li>NET_4_6</li><li>NET_Unity_4_8</li><li>NET_Web</li><li>NET_Micro</li><li>NET_Standard</li><li>NET_Standard_2_0</li></ul>|
+|`-stripenginecode`|Enable Engine code stripping. Disabled is default.|
+|`-managedstrippinglevel=`|Managed stripping level to use. Default is Disabled. Values:</br><ul><li>Disabled</li><li>Low</li><li>Medium</li><li>High</li><li>Minimal</li></ul>|
+|`-scriptdebugging`|Enable scriptdebugging. Disabled is default.|
+|`-addscenetobuild=`|Specify path to scene to add to the build, Path is relative to Assets folder. Use this option for each scene you want to add to the build.|
+|`-openxrfeatures=`|Add array of feature names to enable for openxr. ex `[r:MockRuntime,OculusQuestFeature]` should be name of feature class. Add r: before the feature name to make it required. Required features will fail the job if not found|
+|`-enabledxrtarget=`</br>`-enabledxrtargets=`|XR target to enable in player settings. Values: </br><ul><li>OpenVR</li><li>MockHMD</li><li>OculusXRSDK</li><li> MockHMDXRSDK</li><li>MagicLeapXRSDK</li><li>WindowsMRXRSDK</li><li>PSVR2</li></ul>|
+|`-stereorenderingmode=`</br>`-stereorenderingpath=`|When using an XR provider, the stereo rendering mode to enable. SinglePass is default. Values:</br><ul><li>None</li><li>MultiPass</li><li>SinglePass</li><li>Instancing</li></ul>|
+|`-simulationmode`|Enable Simulation modes for Windows MR in Editor.|
+|`-enablefoveatedrendering`|Enable foveated rendering. Disabled is default.|
+|`-androidtargetarchitecture=`|Android Target Architecture to use. ARM64 is the default value. Values: </br><ul><li>None</li><li>ARMv7</li><li>ARM64</li><li>X86</li><li>X86_64</li><li>All</li></ul> |
+|`-vsync=`|Vsync value. 0 (off) is the default. Values: 0, 1, 2, 3, or 4|
+
+### Performance Test Metadata Options
+These options are used to add useful metadata to Unity tests that also use the Performance Testing Package. The metadata is often used to create additional pivots on the performance test data.
+
+| Option Name   | Description
+|---------------|------------|
+|`-testsrev=`|Used to track the revision id of the tests being used.|
+|`-testsrevdate=`|Used to track revision date of the tests being used.|
+|`-testsbranch=`|Used to track the branch of the tests repo being used.|
+|`-packageundertestname=`|Used to track the name of the package under test.|
+|`-packageundertestversion=`|Used to track the version of the package under test.|
+|`-packageundertestrev=`|Used to track the revision id of the package under test.|
+|`-packageundertestrevdate=`|Used to track the revision date of the package under test.|
+|`-packageundertestbranch=`|Used to track the repo branch of the package under test.|
+|`-testprojectname=`|Used to track the name of the test project.|
+|`-testprojectrevision=`|Used to track test project commit revision id|
+|`-testprojectrevdate=`|Used to track the test project commit revision date|
+|`-testprojectbranch=`|Used to track the repo branch of the test project.|
+|`-joblink=`|URL pointing to test job in CI system.|
+|`-rundevicealias=`|Specify an alias to use for the device you are running on.|
+
 ## Developer Guide  
 
 In order to contribute to the `com.unity.cli-project-setup` package, do the following

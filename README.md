@@ -1,6 +1,6 @@
 # Unity CLI Project Setup
 
-The Unity CLI Project Setup provides a command line parser and a set of CLI options that are used to set Unity build, editor, and player settings for prior to running tests. It's used primarly to help reuse test project in various automated/CI scenarios.
+The Unity CLI Project Setup provides a command line parser and a set of CLI options that are used to set Unity build, editor, and player settings prior to running tests so that test project can be used in various automated/CI scenarios.
 
 The code used for the setup options in the package originally predate many of the corresponding CLI options that UTR now has. A few teams at the time needed an easy way to reuse test projects under various configuration settings, so this package was created to help. Some of these command line switches now co-exist as UTR CLI arguments, but they are preserved here for backward compatibility.
 
@@ -30,7 +30,7 @@ public class Editor
 }
 ```
 
-2. Add the Unity command line option `-executemethod Editor.Setup` to this invokation as well. This will ensure that the `Setup()` method in the package's `Editor` class is executed when the test project is opened, ensuring the CLI options you specified in step one are correctly applied.
+2. Add the Unity command line option `-executemethod Editor.Setup` to your invokation of either Unity or UTR. This will ensure that the `Setup()` method in the package's `Editor` class is executed when the test project is opened, ensuring the CLI options you specified in step one are correctly applied.
 3. Add the CLI options you need for your specific project configuration to your invokation of either Unity or UTR.
 
 ### Examples using the Unity CLI Project Setup options
@@ -47,7 +47,7 @@ while these options are interpreted by the Unity editor
 
 `-executemethod Editor.Setup -playergraphicsapi=OpenGLES3 --platform=Android --scripting-backend=IL2CPP -projectPath D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation`
 
-As noted earlier though, the `executemethod` option above runs a static Editor method from the CLI Project setup package that applies the settings.
+As noted earlier though, the `executemethod` option above is executing the static Editor method you created earlier in order to applies the settings you passed in.
 
 
 **Using the CLI Project Setup options from an invokation of UTR, the build stage of a split-build-and-run**
@@ -62,10 +62,10 @@ while these options are interpreted by the Unity editor
 
 `--architecture=arm64 --artifacts_path=test-results --build-only --editor-location=.Editor --extra-editor-arg="-executemethod" --extra-editor-arg="Editor.Setup" --platform=Android --player-save-path=players --scripting-backend=IL2CPP --suite=playmode  --testproject=D:\unity2\Tests\SRPTests\Projects\UniversalGraphicsTest_Foundation `
 
-As noted earlier though, the `executemethod` option above runs a static Editor method from the CLI Project setup package that applies the settings.
+As noted earlier though, the `executemethod` option above is executing the static Editor method you created earlier in order to applies the settings you passed in.
 
 ### Player and Build Settings Setup Options
-These options are used to adjust player and build settings before building a player for test. They are set in an Editor method discussed in the beginning of this [User Guide](#user-guide) near the end of the project opening phase.
+These options are used to adjust player and build settings before building a player for test. They are set during the Editor method call to the CLI Project Setup methods as discussed in the beginning of this [User Guide](#user-guide) near the end of the project opening phase.
 
 | Option Name   | Description
 |---------------|------------|

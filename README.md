@@ -1,3 +1,7 @@
+# ATTENTION: This package has been migrated to the unity/unity repository here: https://github.cds.internal.unity3d.com/unity/unity/tree/trunk/Tests/SRPTests/Packages/com.unity.cli-project-setup
+
+All subsequent updates to it will be made there. This repository is now READ-ONLY.
+
 # Unity CLI Project Setup
 
 The Unity CLI Project Setup provides a command line parser and a set of CLI options that are used to set Unity build, editor, and player settings prior to running tests so that test project can be used in various automated/CI scenarios.

@@ -9,7 +9,7 @@ on:
 
 jobs:
   pr-comment:
-    runs-on: self-hosted
+    runs-on: unity-linux-runner
     steps:
       - run: echo ${{ github.head_ref }}
 
